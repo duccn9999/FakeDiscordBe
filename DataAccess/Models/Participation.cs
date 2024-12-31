@@ -1,25 +1,28 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DataAccesses.Models
 {
-    [Table("GroupChatParticipation")]
-    public class GroupChatParticipation
+    /* The junction table between User and GroupChat */
+    [Table("Participation")]
+    public class Participation
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int GroupChatParticipationId { get; set; }
+        public int ParticipationId { get; set; }
         public int UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
         public int GroupChatId { get; set; }
         [ForeignKey("GroupChatId")]
         public GroupChat GroupChat { get; set; }
-        public int RoleId { get; set; }
-        [ForeignKey("RoleId")]
-        public Role Role { get; set; }
-        public string? NickName { get; set; }
         public DateTime DateJoined { get; set; }
+        public int RoleId { get; set; }
+        public Role Role { get; set; }
     }
 }
-

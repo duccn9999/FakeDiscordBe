@@ -9,7 +9,6 @@ namespace BusinessLogics.Repositories
         public Task<bool> CheckUserNameDuplicatedAsync(string userName);
         public Task<bool> CheckEmailDuplicatedAsync(string email);
         public Task<bool> CheckAccoutExistedAsync(string userName, string password);
-        public UserParticipationDTO GetUserParticipations(string userName);
         public User GetByUserName(string userName);
     }
 }

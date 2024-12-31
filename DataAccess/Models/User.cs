@@ -19,6 +19,7 @@ namespace DataAccesses.Models
         public string Email { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime? DateModified { get; set; }
-
+        public IEnumerable<GroupChat>? GroupChats { get; set; }
+        public IEnumerable<PrivateMessage>? PrivateMessages { get; set; }
     }
 }

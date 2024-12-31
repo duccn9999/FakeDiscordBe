@@ -32,45 +32,5 @@ namespace BusinessLogics.RepositoriesImpl
             var user = table.FirstOrDefault(x => x.UserName == userName);
             return user;
         }
-
-        public UserParticipationDTO GetUserParticipations(string userName)
-        {
-            var userParticipations = (from u in _context.Users
-                                      join p in _context.Participations
-                                      on u.UserId equals p.UserId
-                                      where u.UserName == userName
-                                      group p by new
-                                      {
-                                          u.UserId,
-                                          u.UserName,
-                                          u.Avatar,
-                                          u.CoverImage,
-                                          u.Email
-                                      } into groupedUsers
-                                      select new UserParticipationDTO
-                                      {
-                                          UserId = groupedUsers.Key.UserId,
-                                          UserName = groupedUsers.Key.UserName,
-                                          Email = groupedUsers.Key.Email,
-                                          Participations = groupedUsers
-                                              .GroupBy(g => g.GroupChatId)
-                                              .Select(g => new ParticipateInGroupsDTO
-                                              {
-                                                  GroupChatId = g.Key,
-                                                  RoleId = g.Select(r => r.RoleId).Distinct().ToList()
-                                              }).ToList()
-                                      }).FirstOrDefault();
-            var getByUserName = GetByUserName(userName);
-            var result = userParticipations == null ? new UserParticipationDTO()
-            {
-                UserId = getByUserName.UserId,
-                UserName = userName,
-                Email = getByUserName.Email,
-                Participations = null
-            } 
-            : userParticipations;
-            return result;
-        }
-
     }
 }

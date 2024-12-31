@@ -7,6 +7,7 @@ namespace DataAccesses.Models
     public class Role
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int RoleId { get; set; }
         public string RoleName { get; set; }
         public string Color { get; set; }
@@ -14,5 +15,7 @@ namespace DataAccesses.Models
         public DateTime? DateModified { get; set; }
         public int UserCreated { get; set; }
         public int? UserModified { get; set; }
+
+        public IEnumerable<Participation>? Participations { get; set; }
     }
 }

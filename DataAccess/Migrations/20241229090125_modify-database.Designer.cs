@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    [Migration("20241224153032_initial-create")]
-    partial class initialcreate
+    [Migration("20241229090125_modify-database")]
+    partial class modifydatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,40 @@ namespace DataAccesses.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("DataAccesses.Models.Channel", b =>
+                {
+                    b.Property<int>("ChannelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ChannelId"));
+
+                    b.Property<string>("ChannelName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("DateModified")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GroupChatId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserCreated")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserModified")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChannelId");
+
+                    b.HasIndex("GroupChatId");
+
+                    b.ToTable("Channel");
+                });
 
             modelBuilder.Entity("DataAccesses.Models.GroupChat", b =>
                 {
@@ -57,47 +91,16 @@ namespace DataAccesses.Migrations
                     b.ToTable("GroupChat");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.GroupChatParticipation", b =>
+            modelBuilder.Entity("DataAccesses.Models.Message", b =>
                 {
-                    b.Property<int>("GroupChatParticipationId")
+                    b.Property<int>("MessageId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GroupChatParticipationId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
 
-                    b.Property<DateTime>("DateJoined")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("GroupChatId")
+                    b.Property<int>("ChannelId")
                         .HasColumnType("int");
-
-                    b.Property<string>("NickName")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("GroupChatParticipationId");
-
-                    b.HasIndex("GroupChatId");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("GroupChatParticipation");
-                });
-
-            modelBuilder.Entity("DataAccesses.Models.GroupMessage", b =>
-                {
-                    b.Property<int>("GroupMsgId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GroupMsgId"));
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -109,22 +112,50 @@ namespace DataAccesses.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("GroupChatParticipationId")
-                        .HasColumnType("int");
-
                     b.Property<int?>("ReplyTo")
                         .HasColumnType("int");
 
                     b.Property<int>("UserCreated")
                         .HasColumnType("int");
 
-                    b.HasKey("GroupMsgId");
+                    b.HasKey("MessageId");
 
-                    b.HasIndex("GroupChatParticipationId");
+                    b.HasIndex("ChannelId");
 
-                    b.HasIndex("ReplyTo");
+                    b.ToTable("Message");
+                });
 
-                    b.ToTable("GroupMessage");
+            modelBuilder.Entity("DataAccesses.Models.Participation", b =>
+                {
+                    b.Property<int>("ParticipationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ParticipationId"));
+
+                    b.Property<DateTime>("DateJoined")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.Property<int>("GroupChatId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ParticipationId");
+
+                    b.HasIndex("GroupChatId");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Participation");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.PrivateMessage", b =>
@@ -152,8 +183,6 @@ namespace DataAccesses.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("PrivateMsgId");
-
-                    b.HasIndex("ReplyTo");
 
                     b.HasIndex("UserId");
 
@@ -230,16 +259,38 @@ namespace DataAccesses.Migrations
                     b.ToTable("User");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.GroupChatParticipation", b =>
+            modelBuilder.Entity("DataAccesses.Models.Channel", b =>
                 {
                     b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
-                        .WithMany()
+                        .WithMany("Channels")
+                        .HasForeignKey("GroupChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GroupChat");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.Message", b =>
+                {
+                    b.HasOne("DataAccesses.Models.Channel", "Channel")
+                        .WithMany("Messages")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.Participation", b =>
+                {
+                    b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
+                        .WithMany("Participations")
                         .HasForeignKey("GroupChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("DataAccesses.Models.Role", "Role")
-                        .WithMany()
+                        .WithMany("Participations")
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -257,38 +308,37 @@ namespace DataAccesses.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.GroupMessage", b =>
-                {
-                    b.HasOne("DataAccesses.Models.GroupChatParticipation", "GroupChatParticipation")
-                        .WithMany()
-                        .HasForeignKey("GroupChatParticipationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataAccesses.Models.GroupMessage", "ReplyToMsg")
-                        .WithMany()
-                        .HasForeignKey("ReplyTo");
-
-                    b.Navigation("GroupChatParticipation");
-
-                    b.Navigation("ReplyToMsg");
-                });
-
             modelBuilder.Entity("DataAccesses.Models.PrivateMessage", b =>
                 {
-                    b.HasOne("DataAccesses.Models.PrivateMessage", "ReplyToMsg")
-                        .WithMany()
-                        .HasForeignKey("ReplyTo");
-
                     b.HasOne("DataAccesses.Models.User", "UserCreated")
-                        .WithMany()
+                        .WithMany("PrivateMessages")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("ReplyToMsg");
-
                     b.Navigation("UserCreated");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.Channel", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.GroupChat", b =>
+                {
+                    b.Navigation("Channels");
+
+                    b.Navigation("Participations");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.Role", b =>
+                {
+                    b.Navigation("Participations");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.User", b =>
+                {
+                    b.Navigation("PrivateMessages");
                 });
 #pragma warning restore 612, 618
         }

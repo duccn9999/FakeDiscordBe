@@ -25,9 +25,16 @@ namespace BusinessLogics.RepositoriesImpl
             table.Remove(existing);
         }
 
+
         public IEnumerable<T> GetAll()
         {
             return table.AsEnumerable();
+        }
+
+        public async Task<IAsyncEnumerable<T>> GetAllAsync()
+        {
+            var t = table.AsAsyncEnumerable();
+            return t;
         }
 
         public T GetById(object id)
@@ -35,9 +42,21 @@ namespace BusinessLogics.RepositoriesImpl
             return table.Find(id);
         }
 
+        public async Task<T> GetByIdAsync(object id)
+        {
+            var obj = table.FindAsync(id);
+            return await obj;
+        }
+
         public void Insert(T obj)
         {
             table.Add(obj);
+        }
+
+        public async Task InsertAsync(T model)
+        {
+            var t = table.AddAsync(model);
+            await t;
         }
 
         public void Update(T obj)

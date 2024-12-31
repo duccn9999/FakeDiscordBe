@@ -19,18 +19,19 @@ namespace DataAccesses.Seeds
 
         public void SeedRoles()
         {
-            // Check if the "Moderator" role already exists
-            if (!_context.Roles.Any(r => r.RoleName == "Moderator"))
+            // Check if any roles already exists
+            if (!_context.Roles.Any())
             {
-                // Add the "Moderator" role
-                _context.Roles.Add(new Role
+                // Add the roles
+                _context.Roles.AddRange(new List<Role>
                 {
-                    RoleName = "Moderator",
-                    Color = "#FFFFFF",
-                    DateCreated = DateTime.UtcNow,
-                    UserCreated = 0
+                    new() {
+                        RoleName = "Moderator",
+                        Color = "#FFFFFF",
+                        DateCreated = DateTime.UtcNow,
+                        UserCreated = 0
+                    }
                 });
-
                 _context.SaveChanges();
             }
         }

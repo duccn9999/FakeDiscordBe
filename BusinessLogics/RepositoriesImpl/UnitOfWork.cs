@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
 using DataAccesses.Models;
+using DataAccesses.Utils;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 
@@ -10,12 +11,14 @@ namespace BusinessLogics.RepositoriesImpl
     {
         private readonly FakeDiscordContext _context;
         private readonly IConfiguration _config;
+        private readonly CloudinaryService _cloudinary;
         private IDbContextTransaction _transaction;
         public IUserRepository _userRepository;
         public IPrivateMessageRepository _messageRepository;
         public IAuthenticationRepository _authenticationRepository;
         public IGroupChatRepository _groupChatRepository;
-        public IGroupChatParticipationRepository _groupChatParticipationRepository;
+        public IParticipationRepository _participationRepository;
+        public IChannelRepository _channelRepository;
         public UnitOfWork(FakeDiscordContext context, IConfiguration config)
         {
             _context = context;
@@ -26,8 +29,8 @@ namespace BusinessLogics.RepositoriesImpl
         public IPrivateMessageRepository PrivateMsges => _messageRepository ??= new PrivateMessageRepository(_context);
         public IAuthenticationRepository Authentication => _authenticationRepository ??= new AuthenticationRepository(Users, _config);
         public IGroupChatRepository GroupChats => _groupChatRepository ??= new GroupChatRepository(_context);
-        public IGroupChatParticipationRepository GroupChatParticipations => _groupChatParticipationRepository ??= new GroupChatParticipationRepository(_context);
-
+        public IParticipationRepository Participations => _participationRepository ??= new ParticipationRepository(_context);
+        public IChannelRepository Channels => _channelRepository ??= new ChannelRepository(_context);
         public void BeginTransaction()
         {
             _transaction = _context.Database.BeginTransaction();
@@ -54,6 +57,11 @@ namespace BusinessLogics.RepositoriesImpl
         public void Rollback()
         {
             _transaction?.Rollback();
+        }
+
+        public Task<int> SaveAsync()
+        {
+            return _context.SaveChangesAsync();
         }
     }
 }

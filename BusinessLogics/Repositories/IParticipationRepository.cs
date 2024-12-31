@@ -1,4 +1,5 @@
-﻿using DataAccesses.Models;
+﻿using BusinessLogics.RepositoriesImpl;
+using DataAccesses.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace BusinessLogics.Repositories
 {
-    public interface IGroupChatParticipationRepository : IGenericRepository<GroupChatParticipation>
+    public interface IParticipationRepository : IGenericRepository<Participation>
     {
     }
 }

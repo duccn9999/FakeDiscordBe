@@ -12,11 +12,13 @@ namespace BusinessLogics.Repositories
         IPrivateMessageRepository PrivateMsges { get; }
         IAuthenticationRepository Authentication { get; }
         IGroupChatRepository GroupChats { get; }
-        IGroupChatParticipationRepository GroupChatParticipations { get; }
+        IParticipationRepository Participations { get; }
+        IChannelRepository Channels { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();
         int Save();
+        Task<int> SaveAsync();
         void Dispose();
     }
 }

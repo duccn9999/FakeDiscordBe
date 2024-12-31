@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace BusinessLogics.RepositoriesImpl
 {
-    public class GroupChatParticipationRepository : GenericRepository<GroupChatParticipation>, IGroupChatParticipationRepository
+    public class ParticipationRepository : GenericRepository<Participation>, IParticipationRepository
     {
-        public GroupChatParticipationRepository(FakeDiscordContext context) : base(context)
+        public ParticipationRepository(FakeDiscordContext context) : base(context)
         {
         }
     }

@@ -22,18 +22,13 @@ namespace BusinessLogics.RepositoriesImpl
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var user = _users.GetUserParticipations(model.UserName);
+            var user = _users.GetByUserName(model.UserName);
             var claims = new List<Claim> {
                 new(JwtRegisteredClaimNames.Iss, user.UserId.ToString()),
                 new(JwtRegisteredClaimNames.Sub, user.UserName),
                 new(JwtRegisteredClaimNames.Email, user.Email),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
-            if (user.Participations != null)
-            {
-                var participationsJson = System.Text.Json.JsonSerializer.Serialize(user.Participations);
-                claims.Add(new Claim("GroupRoles", participationsJson));
-            }
             // need claims
             var token = new JwtSecurityToken(
               null,

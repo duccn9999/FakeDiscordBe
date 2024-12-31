@@ -7,6 +7,7 @@ using System.Text;
 using BusinessLogics.Repositories;
 using BusinessLogics.RepositoriesImpl;
 using DataAccesses.Seeds;
+using DataAccesses.Utils;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
@@ -49,6 +50,9 @@ builder.Services.AddAutoMapper(typeof(UserProfile));
 // DI
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IGroupChatRepository, GroupChatRepository>();
+builder.Services.AddScoped<IParticipationRepository, ParticipationRepository>();
+builder.Services.AddScoped<CloudinaryService>();
 var app = builder.Build();
 // add seed data
 using (var scope = app.Services.CreateScope())

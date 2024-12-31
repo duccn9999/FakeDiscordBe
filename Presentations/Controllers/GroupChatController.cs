@@ -4,6 +4,7 @@ using BusinessLogics.Repositories;
 using DataAccesses.DTOs.GroupChatParticipations;
 using DataAccesses.DTOs.GroupChats;
 using DataAccesses.Models;
+using DataAccesses.Utils;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Presentations.Controllers
@@ -14,28 +15,26 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public GroupChatController(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly CloudinaryService _cloudinary;
+        const int MODERATOR_ROLE_ID = 1;
+        const int EVERYONE_ROLE_ID = 0;
+        public GroupChatController(IUnitOfWork unitOfWork, IMapper mapper, CloudinaryService cloudinary)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _cloudinary = cloudinary;
         }
         [HttpGet("GetJoinedGroupChats/{userId}")]
         public async Task<IActionResult> GetJoinedGroupChats(int userId)
         {
             try
             {
-                _unitOfWork.BeginTransaction();
                 var result = await _unitOfWork.GroupChats.GetJoinedGroupChatsAsync(userId);
-                _unitOfWork.Commit(); // Commit the transaction if everything is successful
-                return Ok(result.AsEnumerable());
-            }catch(Exception ex) 
-            {
-                _unitOfWork.Rollback();
-                return BadRequest(new { message = "An error occurred while retrieving joined group chats.", error = ex.Message });
+                return Ok(result);
             }
-            finally
+            catch (Exception ex)
             {
-                _unitOfWork.Dispose();
+                return BadRequest(new { message = "An error occurred while retrieving joined group chats.", error = ex.Message });
             }
         }
         [HttpPost("Create")]
@@ -51,19 +50,18 @@ namespace Presentations.Controllers
                 var GroupChat = _mapper.Map<GroupChat>(model);
                 _unitOfWork.GroupChats.Insert(GroupChat);
                 _unitOfWork.Save();
-                // add user to group chat
-                var participation = new AddGroupChatParticipation
+                // add participation
+                var Participation = _mapper.Map<Participation>(new AddParticipationDTO
                 {
                     UserId = model.UserCreated,
                     GroupChatId = GroupChat.GroupChatId,
-                    RoleId = 1
-                };
-                var GroupChatParticipation = _mapper.Map<GroupChatParticipation>(participation);
-                _unitOfWork.GroupChatParticipations.Insert(GroupChatParticipation);
+                    RoleId = MODERATOR_ROLE_ID,
+                });
+                _unitOfWork.Participations.Insert(Participation);
                 _unitOfWork.Commit();
                 return Ok("Create group chat success!");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 _unitOfWork.Rollback();
                 return BadRequest("An internal error occurred."); // Return 500 status code
@@ -111,7 +109,6 @@ namespace Presentations.Controllers
                 _unitOfWork.BeginTransaction();
                 var GroupChat = _unitOfWork.GroupChats.GetById(id);
                 _unitOfWork.GroupChats.Delete(GroupChat);
-                _unitOfWork.Save();
                 _unitOfWork.Commit();
                 return Ok("Delete group chat success!");
             }
