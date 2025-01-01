@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DataAccesses.DTOs.GroupChats
 {
-    public class GetJoinedGroupChatsDTO
+    public class GetGroupChatDTO
     {
         public int GroupChatId { get; set; }
         public string Name { get; set; }

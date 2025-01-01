@@ -5,6 +5,7 @@ namespace BusinessLogics.Repositories
 {
     public interface IGroupChatRepository : IGenericRepository<GroupChat>
     {
-        public Task<IEnumerable<GetJoinedGroupChatsDTO>> GetJoinedGroupChatsAsync(int userId);
+        public Task<IEnumerable<GetGroupChatDTO>> GetJoinedGroupChatsAsync(int userId);
+        public Task<GetGroupChatDTO> GetGroupChatByIdAsync(int groupChatId);
     }
 }

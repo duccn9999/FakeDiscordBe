@@ -14,11 +14,23 @@ namespace BusinessLogics.RepositoriesImpl
 {
     public class GroupChatRepository : GenericRepository<GroupChat>, IGroupChatRepository
     {
-        public GroupChatRepository(FakeDiscordContext context) : base(context) 
+        public GroupChatRepository(FakeDiscordContext context) : base(context)
         {
         }
 
-        public async Task<IEnumerable<GetJoinedGroupChatsDTO>> GetJoinedGroupChatsAsync(int userId)
+        public async Task<GetGroupChatDTO> GetGroupChatByIdAsync(int groupChatId)
+        {
+            var groupChat = await _context.GroupChats.FindAsync(groupChatId);
+            var result = new GetGroupChatDTO
+            {
+                GroupChatId = groupChat.GroupChatId,
+                Name = groupChat.Name,
+                CoverImage = groupChat.CoverImage
+            };
+            return result;
+        }
+
+        public async Task<IEnumerable<GetGroupChatDTO>> GetJoinedGroupChatsAsync(int userId)
         {
             var result = from g in _context.GroupChats
                          join p in _context.Participations
@@ -26,7 +38,7 @@ namespace BusinessLogics.RepositoriesImpl
                          join u in _context.Users
                          on p.UserId equals u.UserId
                          where u.UserId == userId
-                         select new GetJoinedGroupChatsDTO
+                         select new GetGroupChatDTO
                          {
                              GroupChatId = g.GroupChatId,
                              Name = g.Name,
