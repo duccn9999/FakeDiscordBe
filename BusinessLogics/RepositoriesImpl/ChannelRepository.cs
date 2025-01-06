@@ -19,7 +19,7 @@ namespace BusinessLogics.RepositoriesImpl
                          where g.GroupChatId == groupChatId
                          select new GetChannelsDTO
                          {
-                             ChannelId = c.GroupChatId,
+                             ChannelId = c.ChannelId,
                              ChannelName = c.ChannelName,
                          };
             return result.AsEnumerable();

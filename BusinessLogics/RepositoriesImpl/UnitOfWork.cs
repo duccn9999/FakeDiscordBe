@@ -11,7 +11,6 @@ namespace BusinessLogics.RepositoriesImpl
     {
         private readonly FakeDiscordContext _context;
         private readonly IConfiguration _config;
-        private readonly CloudinaryService _cloudinary;
         private IDbContextTransaction _transaction;
         public IUserRepository _userRepository;
         public IPrivateMessageRepository _messageRepository;

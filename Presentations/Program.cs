@@ -8,6 +8,8 @@ using BusinessLogics.Repositories;
 using BusinessLogics.RepositoriesImpl;
 using DataAccesses.Seeds;
 using DataAccesses.Utils;
+using Presentations.Hubs;
+using Microsoft.AspNetCore.SignalR;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
@@ -17,6 +19,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; // Handle case insensitivity
 });
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<FakeDiscordContext>(options =>
@@ -40,9 +43,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
-        policy.AllowAnyOrigin() // Allow requests from any origin
+        policy.WithOrigins("http://localhost:3000") // Allow requests from any origin
               .AllowAnyMethod() // Allow any HTTP method (GET, POST, etc.)
-              .AllowAnyHeader(); // Allow any headers
+              .AllowAnyHeader().AllowCredentials(); // Allow any headers
 
     });
 });
@@ -72,6 +75,7 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
+app.MapHub<FakeDiscordHub>("/fakeDiscordHub");
 app.MapControllers();
 
 app.Run();

@@ -6,6 +6,8 @@ using DataAccesses.DTOs.GroupChats;
 using DataAccesses.Models;
 using DataAccesses.Utils;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Presentations.Hubs;
 
 namespace Presentations.Controllers
 {
@@ -15,14 +17,14 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly CloudinaryService _cloudinary;
+        private readonly IHubContext<FakeDiscordHub> _fakeDiscordHub;
         const int MODERATOR_ROLE_ID = 1;
         const int EVERYONE_ROLE_ID = 0;
-        public GroupChatController(IUnitOfWork unitOfWork, IMapper mapper, CloudinaryService cloudinary)
+        public GroupChatController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<FakeDiscordHub> fakeDiscordHub)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _cloudinary = cloudinary;
+            _fakeDiscordHub = fakeDiscordHub;
         }
         [HttpGet("GetJoinedGroupChats/{userId}")]
         public async Task<IActionResult> GetJoinedGroupChats(int userId)
@@ -72,6 +74,7 @@ namespace Presentations.Controllers
                 });
                 _unitOfWork.Participations.Insert(Participation);
                 _unitOfWork.Commit();
+                await _fakeDiscordHub.Clients.All.SendAsync("UpdateGroupChats", (GroupChat));
                 return Ok("Create group chat success!");
             }
             catch (Exception ex)
