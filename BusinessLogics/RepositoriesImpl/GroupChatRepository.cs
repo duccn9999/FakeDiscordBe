@@ -30,7 +30,7 @@ namespace BusinessLogics.RepositoriesImpl
             return result;
         }
 
-        public async Task<IEnumerable<GetGroupChatDTO>> GetJoinedGroupChatsAsync(int userId)
+        public async Task<IAsyncEnumerable<GetGroupChatDTO>> GetJoinedGroupChatPaginationAsync(int userId, int? page, int items)
         {
             var result = from g in _context.GroupChats
                          join p in _context.Participations
@@ -44,7 +44,24 @@ namespace BusinessLogics.RepositoriesImpl
                              Name = g.Name,
                              CoverImage = g.CoverImage
                          };
-            return result.AsEnumerable();
+            return result.Skip((page.Value - 1) * items).Take(items).AsAsyncEnumerable();
+        }
+
+        public async Task<IAsyncEnumerable<GetGroupChatDTO>> GetJoinedGroupChatsAsync(int userId)
+        {
+            var result = from g in _context.GroupChats
+                         join p in _context.Participations
+                         on g.GroupChatId equals p.GroupChatId
+                         join u in _context.Users
+                         on p.UserId equals u.UserId
+                         where u.UserId == userId
+                         select new GetGroupChatDTO
+                         {
+                             GroupChatId = g.GroupChatId,
+                             Name = g.Name,
+                             CoverImage = g.CoverImage
+                         };
+            return result.AsAsyncEnumerable();
         }
     }
 }

@@ -52,6 +52,19 @@ namespace Presentations.Controllers
                 return BadRequest(new { message = "An error occurred while group chats.", error = ex.Message });
             }
         }
+        [HttpGet("GetJoinedGroupChatsPagination/{userId}")]
+        public async Task<IActionResult> GetJoinedGroupChatsPagination(int userId, int? page, int items)
+        {
+            try
+            {
+                var result = await _unitOfWork.GroupChats.GetJoinedGroupChatPaginationAsync(userId, page, items);
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "An error occurred while retrieving joined group chats.", error = ex.Message });
+            }
+        }
         [HttpPost("Create")]
         public async Task<IActionResult> CreateGroupChat(CreateGroupChatDTO model)
         {
@@ -74,7 +87,7 @@ namespace Presentations.Controllers
                 });
                 _unitOfWork.Participations.Insert(Participation);
                 _unitOfWork.Commit();
-                await _fakeDiscordHub.Clients.All.SendAsync("UpdateGroupChats", (GroupChat));
+                await _fakeDiscordHub.Clients.All.SendAsync("GroupChatUpdated", model);
                 return Ok("Create group chat success!");
             }
             catch (Exception ex)

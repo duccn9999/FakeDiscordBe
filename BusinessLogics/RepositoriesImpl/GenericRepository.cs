@@ -37,6 +37,17 @@ namespace BusinessLogics.RepositoriesImpl
             return t;
         }
 
+        public IEnumerable<T> GetAllPagination(long pages, long items)
+        {
+            return table.Skip((((int)pages) - 1) * (int)items).Take((int)items).AsEnumerable();
+        }
+
+        public async Task<IAsyncEnumerable<T>> GetAllPaginationAsync(long pages, long items)
+        {
+            return table.Skip(((int)pages - 1) * (int)items).Take((int)items).AsAsyncEnumerable();
+        }
+
+
         public T GetById(object id)
         {
             return table.Find(id);
