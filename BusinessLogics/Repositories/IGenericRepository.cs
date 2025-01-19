@@ -6,10 +6,12 @@
         IEnumerable<T> GetAllPagination(long pages, long items);
         T GetById(object id);
         void Insert(T model);
+        void InsertRange(List<T> models);
         void Update(T model);
         void Delete(object id);
 
         // Asynchronous
+        Task InsertRangeAsync(List<T> models);
         Task<IAsyncEnumerable<T>> GetAllAsync();
         Task<IAsyncEnumerable<T>> GetAllPaginationAsync(long pages, long items);
         Task<T> GetByIdAsync(object id);

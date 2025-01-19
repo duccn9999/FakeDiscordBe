@@ -70,6 +70,17 @@ namespace BusinessLogics.RepositoriesImpl
             await t;
         }
 
+        public void InsertRange(List<T> models)
+        {
+            table.AddRange(models);
+        }
+
+        public async Task InsertRangeAsync(List<T> models)
+        {
+            var t = table.AddRangeAsync(models);
+            await t;
+        }
+
         public void Update(T obj)
         {
             table.Update(obj);

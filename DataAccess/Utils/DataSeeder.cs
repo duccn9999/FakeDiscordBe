@@ -26,6 +26,12 @@ namespace DataAccesses.Seeds
                 _context.Roles.AddRange(new List<Role>
                 {
                     new() {
+                        RoleName = "Member",
+                        Color = "#FFFFFF",
+                        DateCreated = DateTime.UtcNow,
+                        UserCreated = 0
+                    },
+                    new() {
                         RoleName = "Moderator",
                         Color = "#FFFFFF",
                         DateCreated = DateTime.UtcNow,

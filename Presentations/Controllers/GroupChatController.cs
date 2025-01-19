@@ -5,21 +5,24 @@ using DataAccesses.DTOs.GroupChatParticipations;
 using DataAccesses.DTOs.GroupChats;
 using DataAccesses.Models;
 using DataAccesses.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Presentations.Hubs;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Presentations.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize(Roles = "Member")]
     public class GroupChatController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IHubContext<FakeDiscordHub> _fakeDiscordHub;
-        const int MODERATOR_ROLE_ID = 1;
-        const int EVERYONE_ROLE_ID = 0;
+        const int MEMBER_ROLE_ID = 1;
+        const int MODERATOR_ROLE_ID = 2;
         public GroupChatController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<FakeDiscordHub> fakeDiscordHub)
         {
             _unitOfWork = unitOfWork;
@@ -58,6 +61,7 @@ namespace Presentations.Controllers
             try
             {
                 var result = await _unitOfWork.GroupChats.GetJoinedGroupChatPaginationAsync(userId, page, items);
+                var user = _unitOfWork.Users.GetById(userId);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -66,6 +70,7 @@ namespace Presentations.Controllers
             }
         }
         [HttpPost("Create")]
+        [AllowAnonymous]
         public async Task<IActionResult> CreateGroupChat(CreateGroupChatDTO model)
         {
             try
@@ -79,25 +84,30 @@ namespace Presentations.Controllers
                 _unitOfWork.GroupChats.Insert(GroupChat);
                 _unitOfWork.Save();
                 // add participation
-                var Participation = _mapper.Map<Participation>(new AddParticipationDTO
+                var participations = new List<Participation>
                 {
-                    UserId = model.UserCreated,
-                    GroupChatId = GroupChat.GroupChatId,
-                    RoleId = MODERATOR_ROLE_ID,
-                });
-                _unitOfWork.Participations.Insert(Participation);
+                    _mapper.Map<Participation>(new AddParticipationDTO
+                    {
+                        UserId = model.UserCreated,
+                        GroupChatId = GroupChat.GroupChatId,
+                        RoleId = MODERATOR_ROLE_ID,
+                    }),
+                    _mapper.Map<Participation>(new AddParticipationDTO
+                    {
+                        UserId = model.UserCreated,
+                        GroupChatId = GroupChat.GroupChatId,
+                        RoleId = MEMBER_ROLE_ID,
+                    })
+                };
+                _unitOfWork.Participations.InsertRange(participations);
                 _unitOfWork.Commit();
-                await _fakeDiscordHub.Clients.All.SendAsync("GroupChatUpdated", model);
+                await _fakeDiscordHub.Clients.User(model.UserCreated.ToString()).SendAsync("GroupChatUpdated", model);
                 return Ok("Create group chat success!");
             }
             catch (Exception ex)
             {
                 _unitOfWork.Rollback();
                 return BadRequest("An internal error occurred."); // Return 500 status code
-            }
-            finally
-            {
-                _unitOfWork.Dispose();
             }
         }
         [HttpPut("Update")]

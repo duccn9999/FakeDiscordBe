@@ -24,9 +24,10 @@ namespace BusinessLogics.RepositoriesImpl
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var user = _users.GetByUserName(model.UserName);
             var claims = new List<Claim> {
-                new(JwtRegisteredClaimNames.Iss, user.UserId.ToString()),
-                new(JwtRegisteredClaimNames.Sub, user.UserName),
-                new(JwtRegisteredClaimNames.Email, user.Email),
+                new("userId", user.UserId.ToString()),
+                new("username", user.UserName),
+                new("email", user.Email),
+                new("role", "Member"),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
             // need claims

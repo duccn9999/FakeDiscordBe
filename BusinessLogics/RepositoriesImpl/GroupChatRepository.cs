@@ -14,6 +14,7 @@ namespace BusinessLogics.RepositoriesImpl
 {
     public class GroupChatRepository : GenericRepository<GroupChat>, IGroupChatRepository
     {
+        private const int MEMBER_ROLE_ID = 1;
         public GroupChatRepository(FakeDiscordContext context) : base(context)
         {
         }
@@ -37,7 +38,7 @@ namespace BusinessLogics.RepositoriesImpl
                          on g.GroupChatId equals p.GroupChatId
                          join u in _context.Users
                          on p.UserId equals u.UserId
-                         where u.UserId == userId
+                         where u.UserId == userId && p.RoleId == MEMBER_ROLE_ID
                          select new GetGroupChatDTO
                          {
                              GroupChatId = g.GroupChatId,
@@ -54,7 +55,7 @@ namespace BusinessLogics.RepositoriesImpl
                          on g.GroupChatId equals p.GroupChatId
                          join u in _context.Users
                          on p.UserId equals u.UserId
-                         where u.UserId == userId
+                         where u.UserId == userId && p.RoleId == MEMBER_ROLE_ID
                          select new GetGroupChatDTO
                          {
                              GroupChatId = g.GroupChatId,

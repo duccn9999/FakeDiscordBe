@@ -4,6 +4,8 @@ using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Presentations.Hubs;
 
 namespace Presentations.Controllers
 {
@@ -13,10 +15,12 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public AuthenticationController(IUnitOfWork unitOfWork, IMapper mapper)
+        private readonly IHubContext<FakeDiscordHub> _fakeDiscordHub;
+        public AuthenticationController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<FakeDiscordHub> fakeDiscordHub)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _fakeDiscordHub = fakeDiscordHub;
         }
         [HttpPost("Login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginUserDTO model)
