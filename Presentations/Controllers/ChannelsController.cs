@@ -17,7 +17,6 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly FakeDiscordHub _fakeDiscordHub;
         public ChannelController(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;

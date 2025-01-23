@@ -15,5 +15,10 @@ namespace Presentations.Hubs
         {
             await Clients.Caller.SendAsync("GroupChatsDisplay", str);
         }
+
+        public async Task GroupChatsRefresh()
+        {
+            await Clients.Caller.SendAsync("GroupChatsRefresh");
+        }
     }
 }

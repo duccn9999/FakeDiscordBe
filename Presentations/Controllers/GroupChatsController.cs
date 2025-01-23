@@ -4,26 +4,24 @@ using BusinessLogics.Repositories;
 using DataAccesses.DTOs.GroupChatParticipations;
 using DataAccesses.DTOs.GroupChats;
 using DataAccesses.Models;
-using DataAccesses.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Presentations.Hubs;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace Presentations.Controllers
 {
     [Route("[controller]")]
     [ApiController]
     [Authorize(Roles = "Member")]
-    public class GroupChatController : ControllerBase
+    public class GroupChatsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IHubContext<FakeDiscordHub> _fakeDiscordHub;
         const int MEMBER_ROLE_ID = 1;
         const int MODERATOR_ROLE_ID = 2;
-        public GroupChatController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<FakeDiscordHub> fakeDiscordHub)
+        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<FakeDiscordHub> fakeDiscordHub)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

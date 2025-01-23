@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
 using DataAccesses.Models;
-using DataAccesses.Utils;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 

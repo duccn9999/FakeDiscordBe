@@ -25,7 +25,9 @@ namespace BusinessLogics.RepositoriesImpl
             var user = _users.GetByUserName(model.UserName);
             var claims = new List<Claim> {
                 new("userId", user.UserId.ToString()),
+                new("avatar", user.Avatar),
                 new("username", user.UserName),
+                new("password", user.Password),
                 new("email", user.Email),
                 new("role", "Member"),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())

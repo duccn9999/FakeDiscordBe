@@ -7,9 +7,7 @@ using System.Text;
 using BusinessLogics.Repositories;
 using BusinessLogics.RepositoriesImpl;
 using DataAccesses.Seeds;
-using DataAccesses.Utils;
 using Presentations.Hubs;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -19,6 +17,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; // Handle case insensitivity
 });
+builder.Services.AddDbContext<FakeDiscordContext>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
@@ -50,9 +50,6 @@ builder.Services.AddSwaggerGen(c =>
         }
             });
 });
-builder.Services.AddDbContext<FakeDiscordContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
 
 
 builder.Services.AddAuthentication(options =>
@@ -78,7 +75,6 @@ builder.Services.AddAuthentication(options =>
             if (!string.IsNullOrEmpty(accessToken))
             {
                 context.Token = accessToken;
-                Console.WriteLine($"access token: {context.Token}");
             }
             return Task.CompletedTask;
         }
@@ -93,7 +89,6 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
-
     });
 });
 builder.Services.AddAutoMapper(typeof(UserProfile));
@@ -102,7 +97,6 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGroupChatRepository, GroupChatRepository>();
 builder.Services.AddScoped<IParticipationRepository, ParticipationRepository>();
-builder.Services.AddScoped<CloudinaryService>();
 var app = builder.Build();
 // add seed data
 using (var scope = app.Services.CreateScope())
@@ -123,6 +117,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
 app.MapHub<FakeDiscordHub>("/fakeDiscordHub");
+app.MapHub<GroupChatHub>("/groupChatHub");
 app.MapControllers();
-
 app.Run();
