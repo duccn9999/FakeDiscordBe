@@ -18,10 +18,10 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IHubContext<FakeDiscordHub> _fakeDiscordHub;
+        private readonly IHubContext<UserHub> _fakeDiscordHub;
         const int MEMBER_ROLE_ID = 1;
         const int MODERATOR_ROLE_ID = 2;
-        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<FakeDiscordHub> fakeDiscordHub)
+        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

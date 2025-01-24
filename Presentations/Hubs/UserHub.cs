@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace Presentations.Hubs
 {
     [Authorize]
-    public class FakeDiscordHub : Hub
+    public class UserHub : Hub
     {
         public async Task OnConnected(string username)
         {

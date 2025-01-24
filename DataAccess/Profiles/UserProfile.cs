@@ -9,6 +9,7 @@ namespace DataAccesses.Profiles
         public UserProfile()
         {
             CreateMap<CreateUserDTO, User>();
+            CreateMap<UpdateUserDTO, User>();
             CreateMap<User, LoginUserDTO>();
         }
     }

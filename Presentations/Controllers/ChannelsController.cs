@@ -13,11 +13,11 @@ namespace Presentations.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    public class ChannelController : ControllerBase
+    public class ChannelsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        public ChannelController(IUnitOfWork unitOfWork, IMapper mapper)
+        public ChannelsController(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -52,7 +52,7 @@ namespace Presentations.Controllers
                 var Channel = _mapper.Map<Channel>(model);
                 _unitOfWork.Channels.Insert(Channel);
                 _unitOfWork.Commit();
-                return Ok("Create channel success!");
+                return Created("CreateChannel", model);
             }
             catch (Exception ex)
             {

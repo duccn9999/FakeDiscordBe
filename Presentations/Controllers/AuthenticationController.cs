@@ -15,8 +15,8 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IHubContext<FakeDiscordHub> _fakeDiscordHub;
-        public AuthenticationController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<FakeDiscordHub> fakeDiscordHub)
+        private readonly IHubContext<UserHub> _fakeDiscordHub;
+        public AuthenticationController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;

@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Users;
+using DataAccesses.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +16,11 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        public UsersController(IUnitOfWork unitOfWork, IMapper mapper)
+        {
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+        }
         // GET: api/<UsersController>
         [HttpGet]
         public IEnumerable<string> Get()
@@ -28,21 +34,27 @@ namespace Presentations.Controllers
         {
             return "value";
         }
-
-        // POST api/<UsersController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
         // PUT api/<UsersController>/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put([FromBody] UpdateUserDTO model)
+        [HttpPut("UpdateProfile/{id}")]
+        public async Task<IActionResult> Put(UpdateUserDTO model)
         {
-            var user = await _unitOfWork.Users.GetByIdAsync(model.UserId);
-            if(user == null)
-            return NotFound();
-            return StatusCode(204, "UpdateSuccess");
+            try
+            {
+                var user = await _unitOfWork.Users.GetByIdAsync(model.UserId);
+                if (user == null)
+                    return NotFound();
+                _unitOfWork.BeginTransaction();
+                _mapper.Map(model, user);
+                _unitOfWork.Users.Update(user);
+                _unitOfWork.Save();
+                _unitOfWork.Commit();
+                return NoContent();
+            }
+            catch(Exception ex)
+            {
+                _unitOfWork.Rollback();
+                return BadRequest(ex.Message);
+            }
         }
 
         // DELETE api/<UsersController>/5
