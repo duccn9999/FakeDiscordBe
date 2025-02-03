@@ -25,7 +25,7 @@ namespace BusinessLogics.RepositoriesImpl
             var user = _users.GetByUserName(model.UserName);
             var claims = new List<Claim> {
                 new("userId", user.UserId.ToString()),
-                new("avatar", user.Avatar),
+                new("avatar", user.Avatar != null ? user.Avatar : "null"),
                 new("username", user.UserName),
                 new("password", user.Password),
                 new("email", user.Email),
@@ -37,7 +37,7 @@ namespace BusinessLogics.RepositoriesImpl
               null,
               null,
               claims,
-              expires: DateTime.Now.AddMinutes(2),
+              expires: DateTime.Now.AddHours(1),
               signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);

@@ -9,6 +9,8 @@ using BusinessLogics.RepositoriesImpl;
 using DataAccesses.Seeds;
 using Presentations.Hubs;
 using Microsoft.OpenApi.Models;
+using Presentations.Middlewares;
+using Microsoft.AspNetCore.SignalR;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
@@ -97,6 +99,9 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGroupChatRepository, GroupChatRepository>();
 builder.Services.AddScoped<IParticipationRepository, ParticipationRepository>();
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
+builder.Services.AddSingleton<UserTracker>();
 var app = builder.Build();
 // add seed data
 using (var scope = app.Services.CreateScope())
@@ -116,6 +121,8 @@ app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseCors("AllowAll");
+app.UseMiddleware<TokenVerifyMiddleware>();
+app.UseMiddleware<ExceptionsHandlingMiddleware>();
 app.MapHub<UserHub>("/userHub");
 app.MapHub<GroupChatHub>("/groupChatHub");
 app.MapHub<ChannelHub>("/channelHub");

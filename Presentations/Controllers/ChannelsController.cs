@@ -27,7 +27,7 @@ namespace Presentations.Controllers
         public async Task<IActionResult> GetChannelsByGroupChatId(int groupChatId)
         {
             try
-            {   
+            {
                 var result = _unitOfWork.Channels.GetChannelsByGroupChatId(groupChatId);
                 return Ok(result);
             }
@@ -52,7 +52,7 @@ namespace Presentations.Controllers
                 var Channel = _mapper.Map<Channel>(model);
                 _unitOfWork.Channels.Insert(Channel);
                 _unitOfWork.Commit();
-                return Created("CreateChannel", model);
+                return Created("CreateChannel", new GetChannelsDTO { ChannelId = Channel.ChannelId, ChannelName = Channel.ChannelName });
             }
             catch (Exception ex)
             {

@@ -10,15 +10,5 @@ namespace Presentations.Hubs
         {
             await Clients.Caller.SendAsync("UserConnected", username);
         }
-
-        public async Task GroupChatsDisplay(string str)
-        {
-            await Clients.Caller.SendAsync("GroupChatsDisplay", str);
-        }
-
-        public async Task GroupChatsRefresh()
-        {
-            await Clients.Caller.SendAsync("GroupChatsRefresh");
-        }
     }
 }

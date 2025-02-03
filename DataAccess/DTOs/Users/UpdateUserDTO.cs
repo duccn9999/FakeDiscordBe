@@ -15,6 +15,7 @@ namespace DataAccesses.DTOs.Users
         public string UserName { get; set; }
         [Required]
         public string Password { get; set; }
+        public string? Avatar {  get; set; }
         [Required]
         public string Email { get; set; }
         [JsonIgnore]

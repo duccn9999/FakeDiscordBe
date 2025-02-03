@@ -59,7 +59,6 @@ namespace Presentations.Controllers
             try
             {
                 var result = await _unitOfWork.GroupChats.GetJoinedGroupChatPaginationAsync(userId, page, items);
-                var user = _unitOfWork.Users.GetById(userId);
                 return Ok(result);
             }
             catch (Exception ex)

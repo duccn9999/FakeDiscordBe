@@ -14,6 +14,7 @@ namespace BusinessLogics.Repositories
         IGroupChatRepository GroupChats { get; }
         IParticipationRepository Participations { get; }
         IChannelRepository Channels { get; }
+        IMessageRepository Messages { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();

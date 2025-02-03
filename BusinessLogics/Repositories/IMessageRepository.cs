@@ -1,14 +1,10 @@
-﻿using BusinessLogics.RepositoriesImpl;
+﻿using DataAccesses.DTOs.Messages;
 using DataAccesses.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLogics.Repositories
 {
     public interface IMessageRepository : IGenericRepository<Message>
     {
+        public Task<IAsyncEnumerable<GetMessageDTO>> GetMessagesPaginationByChannelIdAsync(int channelId,  int? page, int items);
     }
 }
