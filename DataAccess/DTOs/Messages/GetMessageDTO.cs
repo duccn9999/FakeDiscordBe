@@ -8,6 +8,7 @@ namespace DataAccesses.DTOs.Messages
 {
     public class GetMessageDTO
     {
+        public int MessageId { get; set; }
         public string Username { get; set; }
         public string Avatar { get; set; }
         public int? ReplyTo { get; set; }

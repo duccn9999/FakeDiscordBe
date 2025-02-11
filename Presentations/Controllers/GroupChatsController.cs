@@ -30,58 +30,35 @@ namespace Presentations.Controllers
         [HttpGet("GetJoinedGroupChats/{userId}")]
         public async Task<IActionResult> GetJoinedGroupChats(int userId)
         {
-            try
-            {
-                var result = await _unitOfWork.GroupChats.GetJoinedGroupChatsAsync(userId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = "An error occurred while retrieving joined group chats.", error = ex.Message });
-            }
+            var result = await _unitOfWork.GroupChats.GetJoinedGroupChatsAsync(userId);
+            return Ok(result);
         }
         [HttpGet("GetGroupChatById/{groupChatId}")]
         public async Task<IActionResult> GetGroupChatById(int groupChatId)
         {
-            try
-            {
-                var result = await _unitOfWork.GroupChats.GetGroupChatByIdAsync(groupChatId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = "An error occurred while group chats.", error = ex.Message });
-            }
+            var result = await _unitOfWork.GroupChats.GetGroupChatByIdAsync(groupChatId);
+            return Ok(result);
         }
         [HttpGet("GetJoinedGroupChatsPagination/{userId}")]
         public async Task<IActionResult> GetJoinedGroupChatsPagination(int userId, int? page, int items)
         {
-            try
-            {
-                var result = await _unitOfWork.GroupChats.GetJoinedGroupChatPaginationAsync(userId, page, items);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = "An error occurred while retrieving joined group chats.", error = ex.Message });
-            }
+            var result = await _unitOfWork.GroupChats.GetJoinedGroupChatPaginationAsync(userId, page, items);
+            return Ok(result);
         }
         [HttpPost("Create")]
         [AllowAnonymous]
         public async Task<IActionResult> CreateGroupChat(CreateGroupChatDTO model)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState); // Return bad request if the model is invalid
-                }
-                _unitOfWork.BeginTransaction();
-                var GroupChat = _mapper.Map<GroupChat>(model);
-                _unitOfWork.GroupChats.Insert(GroupChat);
-                _unitOfWork.Save();
-                // add participation
-                var participations = new List<Participation>
+                return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+            _unitOfWork.BeginTransaction();
+            var GroupChat = _mapper.Map<GroupChat>(model);
+            _unitOfWork.GroupChats.Insert(GroupChat);
+            _unitOfWork.Save();
+            // add participation
+            var participations = new List<Participation>
                 {
                     _mapper.Map<Participation>(new AddParticipationDTO
                     {
@@ -96,67 +73,36 @@ namespace Presentations.Controllers
                         RoleId = MEMBER_ROLE_ID,
                     })
                 };
-                _unitOfWork.Participations.InsertRange(participations);
-                _unitOfWork.Commit();
-                await _fakeDiscordHub.Clients.User(model.UserCreated.ToString()).SendAsync("GroupChatUpdated", model);
-                return Ok("Create group chat success!");
-            }
-            catch (Exception ex)
-            {
-                _unitOfWork.Rollback();
-                return BadRequest("An internal error occurred."); // Return 500 status code
-            }
+            _unitOfWork.Participations.InsertRange(participations);
+            _unitOfWork.Commit();
+            await _fakeDiscordHub.Clients.User(model.UserCreated.ToString()).SendAsync("GroupChatUpdated", model);
+            return Ok("Create group chat success!");
         }
         [HttpPut("Update")]
         public async Task<IActionResult> UpdateGroupChat(UpdateGroupChatDTO model)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState); // Return bad request if the model is invalid
-                }
-                _unitOfWork.BeginTransaction();
-                var GroupChat = _mapper.Map<GroupChat>(model);
-                _unitOfWork.GroupChats.Update(GroupChat);
-                _unitOfWork.Save();
-                _unitOfWork.Commit();
-                return Ok("Update group chat success!");
+                return BadRequest(ModelState); // Return bad request if the model is invalid
             }
-            catch (Exception ex)
-            {
-                _unitOfWork.Rollback();
-                return BadRequest("An internal error occurred."); // Return 500 status code
-            }
-            finally
-            {
-                _unitOfWork.Dispose();
-            }
+            _unitOfWork.BeginTransaction();
+            var GroupChat = _mapper.Map<GroupChat>(model);
+            _unitOfWork.GroupChats.Update(GroupChat);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok("Update group chat success!");
         }
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeleteGroupChat(int id)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState); // Return bad request if the model is invalid
-                }
-                _unitOfWork.BeginTransaction();
-                var GroupChat = _unitOfWork.GroupChats.GetById(id);
-                _unitOfWork.GroupChats.Delete(GroupChat);
-                _unitOfWork.Commit();
-                return Ok("Delete group chat success!");
+                return BadRequest(ModelState); // Return bad request if the model is invalid
             }
-            catch (Exception ex)
-            {
-                _unitOfWork.Rollback();
-                return BadRequest("An internal error occurred."); // Return 500 status code
-            }
-            finally
-            {
-                _unitOfWork.Dispose();
-            }
+            _unitOfWork.BeginTransaction();
+            _unitOfWork.GroupChats.Delete(id);
+            _unitOfWork.Commit();
+            return Ok("Delete group chat success!");
         }
 
     }

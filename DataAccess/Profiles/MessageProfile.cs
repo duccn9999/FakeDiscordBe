@@ -9,6 +9,7 @@ namespace DataAccesses.Profiles
         public MessageProfile()
         {
             CreateMap<CreateMessageDTO, Message>();
+            CreateMap<UpdateMessageDTO, Message>();
         }
     }
 }

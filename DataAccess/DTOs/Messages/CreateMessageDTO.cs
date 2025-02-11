@@ -9,7 +9,7 @@ namespace DataAccesses.DTOs.Messages
         public string Avatar { get; set; }
         public int? ReplyTo { get; set; }
         public string Content { get; set; }
-        [JsonIgnore]
+        //[JsonIgnore]
         public DateTime DateCreated { get; set; } = DateTime.Now;
         public int ChannelId { get; set; }
     }

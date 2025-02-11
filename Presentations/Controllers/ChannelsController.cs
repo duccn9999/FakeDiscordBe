@@ -26,15 +26,8 @@ namespace Presentations.Controllers
         [HttpGet("{groupChatId}")]
         public async Task<IActionResult> GetChannelsByGroupChatId(int groupChatId)
         {
-            try
-            {
-                var result = _unitOfWork.Channels.GetChannelsByGroupChatId(groupChatId);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = "An error occurred while retrieving query.", error = ex.Message });
-            }
+            var result = _unitOfWork.Channels.GetChannelsByGroupChatId(groupChatId);
+            return Ok(result);
 
         }
 
@@ -42,27 +35,15 @@ namespace Presentations.Controllers
         [HttpPost("CreateChannel")]
         public async Task<IActionResult> CreateChannel(CreateChannelDTO model)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState); // Return bad request if the model is invalid
-                }
-                _unitOfWork.BeginTransaction();
-                var Channel = _mapper.Map<Channel>(model);
-                _unitOfWork.Channels.Insert(Channel);
-                _unitOfWork.Commit();
-                return Created("CreateChannel", new GetChannelsDTO { ChannelId = Channel.ChannelId, ChannelName = Channel.ChannelName });
+                return BadRequest(ModelState); // Return bad request if the model is invalid
             }
-            catch (Exception ex)
-            {
-                _unitOfWork.Rollback();
-                return BadRequest("An internal error occurred."); // Return 500 status code
-            }
-            finally
-            {
-                _unitOfWork.Dispose();
-            }
+            _unitOfWork.BeginTransaction();
+            var Channel = _mapper.Map<Channel>(model);
+            _unitOfWork.Channels.Insert(Channel);
+            _unitOfWork.Commit();
+            return Created("CreateChannel", new GetChannelsDTO { ChannelId = Channel.ChannelId, ChannelName = Channel.ChannelName });
         }
 
         // PUT api/<ChannelsController>/5

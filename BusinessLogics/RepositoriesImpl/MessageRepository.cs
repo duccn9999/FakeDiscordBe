@@ -15,9 +15,10 @@ namespace BusinessLogics.RepositoriesImpl
                          on m.ChannelId equals c.ChannelId
                          join u in _context.Users
                          on m.UserCreated equals u.UserId
-                         where c.ChannelId == channelId
+                         where c.ChannelId == channelId orderby m.DateCreated descending
                          select new GetMessageDTO
                          {
+                             MessageId = m.MessageId,
                              Username = u.UserName,
                              Avatar = u.Avatar,
                              ReplyTo = m.ReplyTo,

@@ -22,10 +22,10 @@ namespace Presentations.Controllers
             _mapper = mapper;
         }
         // GET: api/<MessagesController>
-        [HttpGet("GetMessagesPaginationByChannelIdAsync/{channelId}")]
-        public async Task<IActionResult> Get(int channelId, int? page, int items)
+        [HttpGet("GetMessages")]
+        public async Task<IActionResult> Get(int custom, int? page, int items)
         {
-            var result = await _unitOfWork.Messages.GetMessagesPaginationByChannelIdAsync(channelId, page, items);
+            var result = await _unitOfWork.Messages.GetMessagesPaginationByChannelIdAsync(custom, page, items);
             return Ok(result);
         }
 
@@ -45,19 +45,67 @@ namespace Presentations.Controllers
             var insertProcess = _unitOfWork.Messages.InsertAsync(message);
             await insertProcess;
             _unitOfWork.Commit();
-            return Created("CreateMessage", model);
+            var user = await _unitOfWork.Users.GetByIdAsync(message.UserCreated);
+            return Created("CreateMessage", new GetMessageDTO
+            {
+                MessageId = message.MessageId,
+                Username = user.UserName,
+                Avatar = user.Avatar,
+                ReplyTo = message.ReplyTo,
+                Content = message.Content,
+                DateCreated = message.DateCreated,
+                DateModified = message.DateModified,
+                ChannelId = message.ChannelId,
+            });
         }
 
         // PUT api/<MessagesController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("UpdateMessage")]
+        public async Task<IActionResult> Put(UpdateMessageDTO model)
         {
+            _unitOfWork.BeginTransaction();
+            var message = await _unitOfWork.Messages.GetByIdAsync(model.MessageId);
+            _mapper.Map(model, message);
+            _unitOfWork.Messages.Update(message);
+            _unitOfWork.Commit();
+            var user = await _unitOfWork.Users.GetByIdAsync(message.UserCreated);
+            return Ok(new GetMessageDTO
+            {
+                MessageId = message.MessageId,
+                Username = user.UserName,
+                Avatar = user.Avatar,
+                ReplyTo = message.ReplyTo,
+                Content = message.Content,
+                DateCreated = message.DateCreated,
+                DateModified = message.DateModified,
+                ChannelId = message.ChannelId,
+            });
         }
 
         // DELETE api/<MessagesController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete("DeleteMessage/{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
+            _unitOfWork.BeginTransaction();
+            var message = _unitOfWork.Messages.GetById(id);
+            if (message == null)
+            {
+                return NotFound();
+            }
+            _unitOfWork.Messages.Delete(id);
+            _unitOfWork.Commit();
+            var user = await _unitOfWork.Users.GetByIdAsync(message.UserCreated);
+            return Ok(new GetMessageDTO
+            {
+                MessageId = message.MessageId,
+                Username = user.UserName,
+                Avatar = user.Avatar,
+                ReplyTo = message.ReplyTo,
+                Content = message.Content,
+                DateCreated = message.DateCreated,
+                DateModified = message.DateModified,
+                ChannelId = message.ChannelId,
+            });
         }
     }
 }

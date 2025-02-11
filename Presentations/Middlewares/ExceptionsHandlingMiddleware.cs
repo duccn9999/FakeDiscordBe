@@ -1,4 +1,5 @@
 ﻿using BusinessLogics.Repositories;
+using BusinessLogics.RepositoriesImpl;
 using System.Net;
 
 namespace Presentations.Middlewares

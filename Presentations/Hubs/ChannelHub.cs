@@ -18,28 +18,32 @@ namespace Presentations.Hubs
         }
         public async Task OnConnected(string username, GetChannelsDTO model)
         {
-            lock (model)
-            {
-                var channel = _unitOfWork.Channels.GetById(model.ChannelId);
-                var groupChat = _unitOfWork.GroupChats.GetAll().Where(x => x.GroupChatId == channel.GroupChatId).FirstOrDefault();
-            }
-            // add too channel ( assuming that is a subset of a group )
+            var channel = _unitOfWork.Channels.GetById(model.ChannelId);
+            var groupChat = _unitOfWork.GroupChats.GetAll().Where(x => x.GroupChatId == channel.GroupChatId).FirstOrDefault();
+            // add to channel ( assuming that is a subset of a group )
             await _userTracker.GetUsersByChannel(model.ChannelId, username);
             await Clients.Caller.SendAsync("EnterChannel", username, model);
         }
 
         public async Task OnLeave(string username, GetChannelsDTO model)
         {
+
             await _userTracker.TrackUsersLeave(model.ChannelId, username);
             await Clients.User(username).SendAsync("UserLeave", username, model);
         }
-        public async Task SendMessage(CreateMessageDTO model)
+        public async Task SendMessage(GetMessageDTO model)
         {
-            lock (model)
-            {
-                Clients.Users(_userTracker.usersByChannel[model.ChannelId]).SendAsync("SendMessage", model);
-            }
-            await Task.CompletedTask;
+            await Clients.Users(_userTracker.usersByChannel[model.ChannelId]).SendAsync("SendMessage", model);
+        }
+
+        public async Task UpdateMessage(GetMessageDTO model)
+        {
+            await Clients.Users(_userTracker.usersByChannel[model.ChannelId]).SendAsync("UpdateMessage", model);
+        }
+
+        public async Task DeleteMessage(GetMessageDTO model)
+        {
+            await Clients.Users(_userTracker.usersByChannel[model.ChannelId]).SendAsync("DeleteMessage", model);
         }
     }
 }

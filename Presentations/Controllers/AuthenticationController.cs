@@ -25,57 +25,35 @@ namespace Presentations.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> LoginAsync([FromBody] LoginUserDTO model)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState); // Return bad request if the model is invalid
-                }
-                _unitOfWork.BeginTransaction();
-                var result = await _unitOfWork.Authentication.Login(model);
-                if (result == null) // Check if login failed (null result or another failure indicator)
-                {
-                    _unitOfWork.Rollback();
-                    return Unauthorized("Invalid credentials."); // Return 401 if login fails
-                }
-                return Ok(result);
+                return BadRequest(ModelState); // Return bad request if the model is invalid
             }
-            catch (Exception ex)
+            _unitOfWork.BeginTransaction();
+            var result = await _unitOfWork.Authentication.Login(model);
+            if (result == null) // Check if login failed (null result or another failure indicator)
             {
                 _unitOfWork.Rollback();
-                // Log the exception (example: using a logger)
-                // _logger.LogError(ex, "An error occurred while logging in.");
-                return BadRequest("An internal error occurred."); // Return 500 status code
+                return Unauthorized("Invalid credentials."); // Return 401 if login fails
             }
-            finally
-            {
-                _unitOfWork.Dispose();
-            }
+            return Ok(result);
         }
         [HttpPost("SignUp")]
         public async Task<IActionResult> SignUpAsync(CreateUserDTO model)
         {
-            try
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState); // Return bad request if the model is invalid
-                }
-                if(model.Password != model.RepeatPassword)
-                {
-                    return BadRequest("The passwords must be the same!, please enter again!");
-                }
-                _unitOfWork.BeginTransaction();
-                var user = _mapper.Map<User>(model);
-                await _unitOfWork.Authentication.SignUp(user);
-                _unitOfWork.Commit();
-                return Ok(new { model.UserName, model.Password });
+                return BadRequest(ModelState); // Return bad request if the model is invalid
             }
-            catch (Exception ex)
+            if (model.Password != model.RepeatPassword)
             {
-                _unitOfWork.Rollback();
-                return BadRequest("An internal error occurred."); // Return 500 status code
+                return BadRequest("The passwords must be the same!, please enter again!");
             }
+            _unitOfWork.BeginTransaction();
+            var user = _mapper.Map<User>(model);
+            await _unitOfWork.Authentication.SignUp(user);
+            _unitOfWork.Commit();
+            return Ok(new { model.UserName, model.Password });
         }
 
     }

@@ -19,7 +19,7 @@ namespace BusinessLogics.RepositoriesImpl
         {
             _mapper = mapper;
         }
-        public void Delete(object id)
+        public void Delete(int id)
         {
             T existing = table.Find(id);
             table.Remove(existing);

@@ -38,23 +38,15 @@ namespace Presentations.Controllers
         [HttpPut("UpdateProfile/{id}")]
         public async Task<IActionResult> Put(UpdateUserDTO model)
         {
-            try
-            {
-                var user = await _unitOfWork.Users.GetByIdAsync(model.UserId);
-                if (user == null)
-                    return NotFound();
-                _unitOfWork.BeginTransaction();
-                _mapper.Map(model, user);
-                _unitOfWork.Users.Update(user);
-                _unitOfWork.Save();
-                _unitOfWork.Commit();
-                return NoContent();
-            }
-            catch(Exception ex)
-            {
-                _unitOfWork.Rollback();
-                return BadRequest(ex.Message);
-            }
+            var user = await _unitOfWork.Users.GetByIdAsync(model.UserId);
+            if (user == null)
+                return NotFound();
+            _unitOfWork.BeginTransaction();
+            _mapper.Map(model, user);
+            _unitOfWork.Users.Update(user);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return NoContent();
         }
 
         // DELETE api/<UsersController>/5
