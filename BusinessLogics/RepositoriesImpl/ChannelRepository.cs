@@ -11,13 +11,13 @@ namespace BusinessLogics.RepositoriesImpl
         {
         }
 
-        public IEnumerable<GetChannelsDTO> GetChannelsByGroupChatId(int groupChatId)
+        public IEnumerable<GetChannelDTO> GetChannelsByGroupChatId(int groupChatId)
         {
             var result = from g in _context.GroupChats
                          join c in _context.Channels
                          on g.GroupChatId equals c.GroupChatId
                          where g.GroupChatId == groupChatId
-                         select new GetChannelsDTO
+                         select new GetChannelDTO
                          {
                              ChannelId = c.ChannelId,
                              ChannelName = c.ChannelName,

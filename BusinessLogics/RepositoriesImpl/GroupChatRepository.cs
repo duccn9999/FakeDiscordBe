@@ -12,6 +12,13 @@ namespace BusinessLogics.RepositoriesImpl
         {
         }
 
+        public async Task<GroupChat> GetGroupChatByChannelIdAsync(int channelId)
+        {
+            var channel = await _context.Channels.SingleOrDefaultAsync(x => x.ChannelId == channelId);
+            var groupChat = await _context.GroupChats.FindAsync(channel.GroupChatId);
+            return groupChat;
+        }
+
         public async Task<GetGroupChatDTO> GetGroupChatByIdAsync(int groupChatId)
         {
             var groupChat = await _context.GroupChats.FindAsync(groupChatId);

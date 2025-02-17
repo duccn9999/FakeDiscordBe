@@ -16,7 +16,7 @@ namespace Presentations.Hubs
             _unitOfWork = unitOfWork;
             _userTracker = userTracker;
         }
-        public async Task OnConnected(string username, GetChannelsDTO model)
+        public async Task OnConnected(string username, GetChannelDTO model)
         {
             var channel = _unitOfWork.Channels.GetById(model.ChannelId);
             var groupChat = _unitOfWork.GroupChats.GetAll().Where(x => x.GroupChatId == channel.GroupChatId).FirstOrDefault();
@@ -25,7 +25,7 @@ namespace Presentations.Hubs
             await Clients.Caller.SendAsync("EnterChannel", username, model);
         }
 
-        public async Task OnLeave(string username, GetChannelsDTO model)
+        public async Task OnLeave(string username, GetChannelDTO model)
         {
 
             await _userTracker.TrackUsersLeave(model.ChannelId, username);

@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using BusinessLogics.Repositories;
 using DataAccesses.Models;
 using DataAccesses.DTOs.GroupChats;
+using DataAccesses.DTOs.Channels;
 
 namespace Presentations.Hubs
 {
@@ -29,9 +30,30 @@ namespace Presentations.Hubs
             await Clients.User(userId).SendAsync("GroupChatsRefresh");
         }
 
+        public async Task OnLeaveGroupChat(string username, GetGroupChatDTO groupChat)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupChat.GroupChatId.ToString());
+            await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("LeaveGroupChat", username, groupChat);
+        }
         public async Task GetConnectedUser(int groupChatId)
         {
 
+        }
+
+        public async Task CreateChannel(GetChannelDTO channel)
+        {
+            var groupChat = await _unitOfWork.GroupChats.GetGroupChatByChannelIdAsync(channel.ChannelId);
+            await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("CreateChannel", channel);
+        }
+        public async Task UpdateChannel(GetChannelDTO channel)
+        {
+            var groupChat = await _unitOfWork.GroupChats.GetGroupChatByChannelIdAsync(channel.ChannelId);
+            await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("UpdateChannel", channel);
+        }
+        public async Task DeleteChannel(GetChannelDTO channel)
+        {
+            var groupChat = await _unitOfWork.GroupChats.GetGroupChatByChannelIdAsync(channel.ChannelId);
+            await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("DeleteChannel", channel);
         }
     }
 }

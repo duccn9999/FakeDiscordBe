@@ -15,6 +15,7 @@ namespace DataAccesses.Profiles
         public ChannelProfile()
         {
             CreateMap<CreateChannelDTO, Channel>();
+            CreateMap<UpdateChannelDTO, Channel>();
         }
     }
 }

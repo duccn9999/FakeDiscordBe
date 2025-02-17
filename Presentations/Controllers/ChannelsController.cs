@@ -43,19 +43,41 @@ namespace Presentations.Controllers
             var Channel = _mapper.Map<Channel>(model);
             _unitOfWork.Channels.Insert(Channel);
             _unitOfWork.Commit();
-            return Created("CreateChannel", new GetChannelsDTO { ChannelId = Channel.ChannelId, ChannelName = Channel.ChannelName });
+            return Created("CreateChannel", new GetChannelDTO { ChannelId = Channel.ChannelId, ChannelName = Channel.ChannelName });
         }
 
         // PUT api/<ChannelsController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("UpdateChannel")]
+        public async Task<IActionResult> UpdateChannel(UpdateChannelDTO model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+            _unitOfWork.BeginTransaction();
+            var channel = await _unitOfWork.Channels.GetByIdAsync(model.ChannelId);
+             _mapper.Map(model, channel);
+            _unitOfWork.Channels.Update(channel);
+            _unitOfWork.Commit();
+            return Ok(new GetChannelDTO
+            {
+                ChannelId = channel.ChannelId,
+                ChannelName = channel.ChannelName,
+            });
         }
 
         // DELETE api/<ChannelsController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete("DeleteChannel/{id}")]
+        public async Task<IActionResult> DeleteChannel(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+            _unitOfWork.BeginTransaction();
+            _unitOfWork.Channels.Delete(id);
+            _unitOfWork.Commit();
+            return NoContent();
         }
     }
 }

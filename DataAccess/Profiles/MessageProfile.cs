@@ -10,6 +10,7 @@ namespace DataAccesses.Profiles
         {
             CreateMap<CreateMessageDTO, Message>();
             CreateMap<UpdateMessageDTO, Message>();
+            CreateMap<Message, GetMessageDTO>();
         }
     }
 }

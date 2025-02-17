@@ -6,6 +6,6 @@ namespace BusinessLogics.Repositories
 {
     public interface IChannelRepository : IGenericRepository<Channel>
     {
-        public IEnumerable<GetChannelsDTO> GetChannelsByGroupChatId(int groupChatId);
+        public IEnumerable<GetChannelDTO> GetChannelsByGroupChatId(int groupChatId);
     }
 }

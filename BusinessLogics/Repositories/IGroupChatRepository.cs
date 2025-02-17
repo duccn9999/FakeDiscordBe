@@ -7,6 +7,7 @@ namespace BusinessLogics.Repositories
     {
         public Task<IAsyncEnumerable<GetGroupChatDTO>> GetJoinedGroupChatsAsync(int userId);
         public Task<GetGroupChatDTO> GetGroupChatByIdAsync(int groupChatId);
+        public Task<GroupChat> GetGroupChatByChannelIdAsync(int channelId);
         public Task<IAsyncEnumerable<GetGroupChatDTO>> GetJoinedGroupChatPaginationAsync(int userId, int? page, int items);
     }
 }
