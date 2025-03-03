@@ -15,6 +15,7 @@ namespace BusinessLogics.Repositories
         IParticipationRepository Participations { get; }
         IChannelRepository Channels { get; }
         IMessageRepository Messages { get; }
+        IRoleRepository Roles { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();

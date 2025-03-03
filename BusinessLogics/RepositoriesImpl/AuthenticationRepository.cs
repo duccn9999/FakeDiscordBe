@@ -29,7 +29,7 @@ namespace BusinessLogics.RepositoriesImpl
                 new("username", user.UserName),
                 new("password", user.Password),
                 new("email", user.Email),
-                new("role", "Member"),
+                new(ClaimTypes.Role, "Member"),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
             // need claims

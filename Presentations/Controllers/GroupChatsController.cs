@@ -19,13 +19,15 @@ namespace Presentations.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IHubContext<UserHub> _fakeDiscordHub;
+        private readonly ICloudinaryService _cloudinaryService;
         const int MEMBER_ROLE_ID = 1;
         const int MODERATOR_ROLE_ID = 2;
-        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub)
+        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _fakeDiscordHub = fakeDiscordHub;
+            _cloudinaryService = cloudinaryService;
         }
         [HttpGet("GetJoinedGroupChats/{userId}")]
         public async Task<IActionResult> GetJoinedGroupChats(int userId)
@@ -54,6 +56,9 @@ namespace Presentations.Controllers
                 return BadRequest(ModelState); // Return bad request if the model is invalid
             }
             _unitOfWork.BeginTransaction();
+            // upload image to cloudinary
+            var uploadedCoverImage = await _cloudinaryService.UploadImage(model.CoverImage);
+            model.CoverImage = uploadedCoverImage;
             var GroupChat = _mapper.Map<GroupChat>(model);
             _unitOfWork.GroupChats.Insert(GroupChat);
             _unitOfWork.Save();
@@ -79,6 +84,7 @@ namespace Presentations.Controllers
             return Ok("Create group chat success!");
         }
         [HttpPut("Update")]
+        //[Authorize(Roles = "Moderator")]
         public async Task<IActionResult> UpdateGroupChat(UpdateGroupChatDTO model)
         {
             if (!ModelState.IsValid)
@@ -86,11 +92,18 @@ namespace Presentations.Controllers
                 return BadRequest(ModelState); // Return bad request if the model is invalid
             }
             _unitOfWork.BeginTransaction();
+            // upload image to cloudinary
+            var uploadedCoverImage = await _cloudinaryService.UploadImage(model.CoverImage);
+            model.CoverImage = uploadedCoverImage;
             var GroupChat = _mapper.Map<GroupChat>(model);
             _unitOfWork.GroupChats.Update(GroupChat);
             _unitOfWork.Save();
             _unitOfWork.Commit();
-            return Ok("Update group chat success!");
+            return Ok(new GetGroupChatDTO{
+                GroupChatId = GroupChat.GroupChatId,
+                CoverImage = GroupChat.CoverImage,
+                Name = GroupChat.Name
+            });
         }
         [HttpDelete("Delete/{id}")]
         public async Task<IActionResult> DeleteGroupChat(int id)

@@ -18,6 +18,7 @@ namespace BusinessLogics.RepositoriesImpl
         public IParticipationRepository _participationRepository;
         public IChannelRepository _channelRepository;
         public IMessageRepository _messageRepository;
+        public IRoleRepository _roleRepository;
         public UnitOfWork(FakeDiscordContext context, IConfiguration config)
         {
             _context = context;
@@ -31,6 +32,7 @@ namespace BusinessLogics.RepositoriesImpl
         public IParticipationRepository Participations => _participationRepository ??= new ParticipationRepository(_context);
         public IChannelRepository Channels => _channelRepository ??= new ChannelRepository(_context);
         public IMessageRepository Messages => _messageRepository ??= new MessageRepository(_context);
+        public IRoleRepository Roles => _roleRepository ??= new RoleRepository(_context);
         public void BeginTransaction()
         {
             _transaction = _context.Database.BeginTransaction();
