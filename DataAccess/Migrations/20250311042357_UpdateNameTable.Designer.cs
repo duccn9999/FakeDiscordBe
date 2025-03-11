@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    [Migration("20241229090125_modify-database")]
-    partial class modifydatabase
+    [Migration("20250311042357_UpdateNameTable")]
+    partial class UpdateNameTable
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -40,7 +40,7 @@ namespace DataAccesses.Migrations
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTime>("DateModified")
+                    b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("GroupChatId")
@@ -49,7 +49,7 @@ namespace DataAccesses.Migrations
                     b.Property<int>("UserCreated")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserModified")
+                    b.Property<int?>("UserModified")
                         .HasColumnType("int");
 
                     b.HasKey("ChannelId");
@@ -91,6 +91,21 @@ namespace DataAccesses.Migrations
                     b.ToTable("GroupChat");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.GroupChatRole", b =>
+                {
+                    b.Property<int>("GroupChatId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("GroupChatId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("GroupChatRole");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.Message", b =>
                 {
                     b.Property<int>("MessageId")
@@ -123,39 +138,6 @@ namespace DataAccesses.Migrations
                     b.HasIndex("ChannelId");
 
                     b.ToTable("Message");
-                });
-
-            modelBuilder.Entity("DataAccesses.Models.Participation", b =>
-                {
-                    b.Property<int>("ParticipationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ParticipationId"));
-
-                    b.Property<DateTime>("DateJoined")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
-
-                    b.Property<int>("GroupChatId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ParticipationId");
-
-                    b.HasIndex("GroupChatId");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Participation");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.PrivateMessage", b =>
@@ -259,6 +241,26 @@ namespace DataAccesses.Migrations
                     b.ToTable("User");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.UserRole", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateAdded")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("UserRole");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.Channel", b =>
                 {
                     b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
@@ -268,6 +270,25 @@ namespace DataAccesses.Migrations
                         .IsRequired();
 
                     b.Navigation("GroupChat");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.GroupChatRole", b =>
+                {
+                    b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
+                        .WithMany("GroupChatRoles")
+                        .HasForeignKey("GroupChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccesses.Models.Role", "Role")
+                        .WithMany("GroupChatRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GroupChat");
+
+                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Message", b =>
@@ -281,33 +302,6 @@ namespace DataAccesses.Migrations
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.Participation", b =>
-                {
-                    b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
-                        .WithMany("Participations")
-                        .HasForeignKey("GroupChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataAccesses.Models.Role", "Role")
-                        .WithMany("Participations")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataAccesses.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GroupChat");
-
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DataAccesses.Models.PrivateMessage", b =>
                 {
                     b.HasOne("DataAccesses.Models.User", "UserCreated")
@@ -319,6 +313,25 @@ namespace DataAccesses.Migrations
                     b.Navigation("UserCreated");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.UserRole", b =>
+                {
+                    b.HasOne("DataAccesses.Models.Role", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DataAccesses.Models.User", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.Channel", b =>
                 {
                     b.Navigation("Messages");
@@ -328,17 +341,21 @@ namespace DataAccesses.Migrations
                 {
                     b.Navigation("Channels");
 
-                    b.Navigation("Participations");
+                    b.Navigation("GroupChatRoles");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Role", b =>
                 {
-                    b.Navigation("Participations");
+                    b.Navigation("GroupChatRoles");
+
+                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.User", b =>
                 {
                     b.Navigation("PrivateMessages");
+
+                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

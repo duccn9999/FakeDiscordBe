@@ -25,6 +25,10 @@ namespace BusinessLogics.RepositoriesImpl
             table.Remove(existing);
         }
 
+        public void DeleteRange(List<T> models)
+        {
+            table.RemoveRange(models);
+        }
 
         public IEnumerable<T> GetAll()
         {

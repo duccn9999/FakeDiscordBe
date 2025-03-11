@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using DataAccesses.DTOs.GroupChatParticipations;
-using DataAccesses.DTOs.GroupChats;
+using DataAccesses.DTOs.GroupChatRoles;
+using DataAccesses.DTOs.UserRoles;
 using DataAccesses.Models;
 using System;
 using System.Collections.Generic;
@@ -10,11 +10,11 @@ using System.Threading.Tasks;
 
 namespace DataAccesses.Profiles
 {
-    public class ParticipationProfile : Profile
+    public class UserRoleProfile : Profile
     {
-        public ParticipationProfile()
+        public UserRoleProfile()
         {
-            CreateMap<AddParticipationDTO, Participation>();
+            CreateMap<UserRoleDTO, UserRole>();
         }
     }
 }

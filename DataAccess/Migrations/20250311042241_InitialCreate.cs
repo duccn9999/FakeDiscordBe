@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DataAccesses.Migrations
 {
     /// <inheritdoc />
-    public partial class modifydatabase : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -74,9 +74,9 @@ namespace DataAccesses.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ChannelName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserCreated = table.Column<int>(type: "int", nullable: false),
-                    UserModified = table.Column<int>(type: "int", nullable: false),
+                    UserModified = table.Column<int>(type: "int", nullable: true),
                     GroupChatId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -91,36 +91,26 @@ namespace DataAccesses.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Participation",
+                name: "GroupChatRoles",
                 columns: table => new
                 {
-                    ParticipationId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
                     GroupChatId = table.Column<int>(type: "int", nullable: false),
-                    DateJoined = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
                     RoleId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Participation", x => x.ParticipationId);
+                    table.PrimaryKey("PK_GroupChatRoles", x => new { x.GroupChatId, x.RoleId });
                     table.ForeignKey(
-                        name: "FK_Participation_GroupChat_GroupChatId",
+                        name: "FK_GroupChatRoles_GroupChat_GroupChatId",
                         column: x => x.GroupChatId,
                         principalTable: "GroupChat",
                         principalColumn: "GroupChatId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_Participation_Role_RoleId",
+                        name: "FK_GroupChatRoles_Role_RoleId",
                         column: x => x.RoleId,
                         principalTable: "Role",
                         principalColumn: "RoleId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Participation_User_UserId",
-                        column: x => x.UserId,
-                        principalTable: "User",
-                        principalColumn: "UserId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -141,6 +131,31 @@ namespace DataAccesses.Migrations
                     table.PrimaryKey("PK_PrivateMessage", x => x.PrivateMsgId);
                     table.ForeignKey(
                         name: "FK_PrivateMessage_User_UserId",
+                        column: x => x.UserId,
+                        principalTable: "User",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserRole",
+                columns: table => new
+                {
+                    UserId = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    DateAdded = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserRole", x => new { x.UserId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_UserRole_Role_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Role",
+                        principalColumn: "RoleId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserRole_User_UserId",
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "UserId",
@@ -177,42 +192,40 @@ namespace DataAccesses.Migrations
                 column: "GroupChatId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GroupChatRoles_RoleId",
+                table: "GroupChatRoles",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Message_ChannelId",
                 table: "Message",
                 column: "ChannelId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Participation_GroupChatId",
-                table: "Participation",
-                column: "GroupChatId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Participation_RoleId",
-                table: "Participation",
-                column: "RoleId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Participation_UserId",
-                table: "Participation",
-                column: "UserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_PrivateMessage_UserId",
                 table: "PrivateMessage",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserRole_RoleId",
+                table: "UserRole",
+                column: "RoleId");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "GroupChatRoles");
+
+            migrationBuilder.DropTable(
                 name: "Message");
 
             migrationBuilder.DropTable(
-                name: "Participation");
+                name: "PrivateMessage");
 
             migrationBuilder.DropTable(
-                name: "PrivateMessage");
+                name: "UserRole");
 
             migrationBuilder.DropTable(
                 name: "Channel");

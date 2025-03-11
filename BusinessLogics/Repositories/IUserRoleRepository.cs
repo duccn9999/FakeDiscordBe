@@ -1,5 +1,4 @@
-﻿using BusinessLogics.RepositoriesImpl;
-using DataAccesses.Models;
+﻿using DataAccesses.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace BusinessLogics.Repositories
 {
-    public interface IParticipationRepository : IGenericRepository<Participation>
+    public interface IUserRoleRepository : IGenericRepository<UserRole>
     {
+        public List<UserRole> GetUserRolesByUserId(int userId);
     }
 }

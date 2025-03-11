@@ -8,10 +8,8 @@ using System.Threading.Tasks;
 
 namespace BusinessLogics.RepositoriesImpl
 {
-    public class ParticipationRepository : GenericRepository<Participation>, IParticipationRepository
+    public class GroupChatRoleRepository: GenericRepository<GroupChatRole>, IGroupChatRoleRepository
     {
-        public ParticipationRepository(FakeDiscordContext context) : base(context)
-        {
-        }
+        public GroupChatRoleRepository(FakeDiscordContext context) : base(context) { }
     }
 }

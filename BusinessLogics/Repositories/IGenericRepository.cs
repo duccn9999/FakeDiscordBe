@@ -8,6 +8,7 @@
         void InsertRange(List<T> models);
         void Update(T model);
         void Delete(int id);
+        void DeleteRange(List<T> models);
 
         // Asynchronous
         Task InsertRangeAsync(List<T> models);

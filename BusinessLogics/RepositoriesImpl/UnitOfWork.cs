@@ -15,10 +15,12 @@ namespace BusinessLogics.RepositoriesImpl
         public IPrivateMessageRepository _privateMessageRepository;
         public IAuthenticationRepository _authenticationRepository;
         public IGroupChatRepository _groupChatRepository;
-        public IParticipationRepository _participationRepository;
         public IChannelRepository _channelRepository;
         public IMessageRepository _messageRepository;
         public IRoleRepository _roleRepository;
+        public IGroupChatRoleRepository _groupChatRoles;
+
+        public IUserRoleRepository _userRoles;
         public UnitOfWork(FakeDiscordContext context, IConfiguration config)
         {
             _context = context;
@@ -29,10 +31,12 @@ namespace BusinessLogics.RepositoriesImpl
         public IPrivateMessageRepository PrivateMsges => _privateMessageRepository ??= new PrivateMessageRepository(_context);
         public IAuthenticationRepository Authentication => _authenticationRepository ??= new AuthenticationRepository(Users, _config);
         public IGroupChatRepository GroupChats => _groupChatRepository ??= new GroupChatRepository(_context);
-        public IParticipationRepository Participations => _participationRepository ??= new ParticipationRepository(_context);
         public IChannelRepository Channels => _channelRepository ??= new ChannelRepository(_context);
         public IMessageRepository Messages => _messageRepository ??= new MessageRepository(_context);
         public IRoleRepository Roles => _roleRepository ??= new RoleRepository(_context);
+        public IUserRoleRepository UserRoles => _userRoles ??= new UserRoleRepository(_context);
+        public IGroupChatRoleRepository GroupChatRoles => _groupChatRoles ?? new GroupChatRoleRepository(_context);
+
         public void BeginTransaction()
         {
             _transaction = _context.Database.BeginTransaction();

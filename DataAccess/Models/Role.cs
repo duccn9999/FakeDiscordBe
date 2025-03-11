@@ -15,7 +15,7 @@ namespace DataAccesses.Models
         public DateTime? DateModified { get; set; }
         public int UserCreated { get; set; }
         public int? UserModified { get; set; }
-
-        public IEnumerable<Participation>? Participations { get; set; }
+        public IEnumerable<UserRole>? UserRoles { get; set; }
+        public IEnumerable<GroupChatRole>? GroupChatRoles { get; set; }
     }
 }

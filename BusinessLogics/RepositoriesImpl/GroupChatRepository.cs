@@ -1,13 +1,33 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.GroupChats;
 using DataAccesses.Models;
+using DataAccesses.Utils;
 using Microsoft.EntityFrameworkCore;
 
 namespace BusinessLogics.RepositoriesImpl
 {
     public class GroupChatRepository : GenericRepository<GroupChat>, IGroupChatRepository
     {
-        private const int MEMBER_ROLE_ID = 1;
+        private List<GetGroupChatDTO> GetGroupChat(int userId)
+        {
+            var result = from g in _context.GroupChats
+                         join gr in _context.GroupChatRoles
+                         on g.GroupChatId equals gr.GroupChatId
+                         join r in _context.Roles
+                         on gr.RoleId equals r.RoleId
+                         join ur in _context.UserRoles
+                         on r.RoleId equals ur.RoleId
+                         join u in _context.Users
+                         on ur.UserId equals u.UserId
+                         where u.UserId == userId && ur.RoleId == (int)RoleSeedEnum.MEMBER_ROLE_ID
+                         select new GetGroupChatDTO
+                         {
+                             GroupChatId = g.GroupChatId,
+                             Name = g.Name,
+                             CoverImage = g.CoverImage
+                         };
+            return result.ToList();
+        }
         public GroupChatRepository(FakeDiscordContext context) : base(context)
         {
         }
@@ -31,38 +51,16 @@ namespace BusinessLogics.RepositoriesImpl
             return result;
         }
 
-        public async Task<IAsyncEnumerable<GetGroupChatDTO>> GetJoinedGroupChatPaginationAsync(int userId, int? page, int items)
+        public async Task<IEnumerable<GetGroupChatDTO>> GetJoinedGroupChatPaginationAsync(int userId, int? page, int items)
         {
-            var result = from g in _context.GroupChats
-                         join p in _context.Participations
-                         on g.GroupChatId equals p.GroupChatId
-                         join u in _context.Users
-                         on p.UserId equals u.UserId
-                         where u.UserId == userId && p.RoleId == MEMBER_ROLE_ID
-                         select new GetGroupChatDTO
-                         {
-                             GroupChatId = g.GroupChatId,
-                             Name = g.Name,
-                             CoverImage = g.CoverImage
-                         };
-            return result.Skip((page.Value - 1) * items).Take(items).AsAsyncEnumerable();
+            return GetGroupChat(userId).Skip((page.Value - 1) * items)
+                               .Take(items)
+                               .AsEnumerable();
         }
 
-        public async Task<IAsyncEnumerable<GetGroupChatDTO>> GetJoinedGroupChatsAsync(int userId)
+        public async Task<IEnumerable<GetGroupChatDTO>> GetJoinedGroupChatsAsync(int userId)
         {
-            var result = from g in _context.GroupChats
-                         join p in _context.Participations
-                         on g.GroupChatId equals p.GroupChatId
-                         join u in _context.Users
-                         on p.UserId equals u.UserId
-                         where u.UserId == userId && p.RoleId == MEMBER_ROLE_ID
-                         select new GetGroupChatDTO
-                         {
-                             GroupChatId = g.GroupChatId,
-                             Name = g.Name,
-                             CoverImage = g.CoverImage
-                         };
-            return result.AsAsyncEnumerable();
+            return GetGroupChat(userId).AsEnumerable();
         }
     }
 }

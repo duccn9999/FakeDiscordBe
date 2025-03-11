@@ -1,5 +1,8 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
+using DataAccesses.DTOs.Channels;
+using DataAccesses.DTOs.Roles;
+using DataAccesses.Models;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -32,20 +35,47 @@ namespace Presentations.Controllers
         }
         // POST api/<RolesController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post([FromBody] CreateRoleDTO model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+            _unitOfWork.BeginTransaction();
+            var role = _mapper.Map<Role>(model);
+            _unitOfWork.Roles.Insert(role);
+            _unitOfWork.Commit();
+            return Created("POST", role);
         }
 
         // PUT api/<RolesController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut]
+        public async Task<IActionResult> Put([FromBody] UpdateRoleDTO model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+            _unitOfWork.BeginTransaction();
+            var role = await _unitOfWork.Roles.GetByIdAsync(model.RoleId);
+            _mapper.Map(model, role);
+            _unitOfWork.Roles.Update(role);
+            _unitOfWork.Commit();
+            return Ok(role);
         }
 
         // DELETE api/<RolesController>/5
         [HttpDelete("{id}")]
-        public void Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+            _unitOfWork.BeginTransaction();
+            _unitOfWork.Roles.Delete(id);
+            _unitOfWork.Commit();
+            return NoContent();
         }
     }
 }

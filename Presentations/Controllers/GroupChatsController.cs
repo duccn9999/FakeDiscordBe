@@ -2,8 +2,11 @@
 using AutoMapper;
 using BusinessLogics.Repositories;
 using DataAccesses.DTOs.GroupChatParticipations;
+using DataAccesses.DTOs.GroupChatRoles;
 using DataAccesses.DTOs.GroupChats;
+using DataAccesses.DTOs.UserRoles;
 using DataAccesses.Models;
+using DataAccesses.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
@@ -18,7 +21,6 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly IHubContext<UserHub> _fakeDiscordHub;
         private readonly ICloudinaryService _cloudinaryService;
         const int MEMBER_ROLE_ID = 1;
         const int MODERATOR_ROLE_ID = 2;
@@ -26,7 +28,6 @@ namespace Presentations.Controllers
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _fakeDiscordHub = fakeDiscordHub;
             _cloudinaryService = cloudinaryService;
         }
         [HttpGet("GetJoinedGroupChats/{userId}")]
@@ -62,25 +63,37 @@ namespace Presentations.Controllers
             var GroupChat = _mapper.Map<GroupChat>(model);
             _unitOfWork.GroupChats.Insert(GroupChat);
             _unitOfWork.Save();
-            // add participation
-            var participations = new List<Participation>
+            // Add role in group chat
+            var groupChatRoles = new List<GroupChatRole>
+            {
+                _mapper.Map<GroupChatRole>(new GroupChatRoleDTO
                 {
-                    _mapper.Map<Participation>(new AddParticipationDTO
-                    {
-                        UserId = model.UserCreated,
-                        GroupChatId = GroupChat.GroupChatId,
-                        RoleId = MODERATOR_ROLE_ID,
-                    }),
-                    _mapper.Map<Participation>(new AddParticipationDTO
-                    {
-                        UserId = model.UserCreated,
-                        GroupChatId = GroupChat.GroupChatId,
-                        RoleId = MEMBER_ROLE_ID,
-                    })
-                };
-            _unitOfWork.Participations.InsertRange(participations);
+                    GroupChatId = GroupChat.GroupChatId,
+                    RoleId = (int)RoleSeedEnum.MEMBER_ROLE_ID
+                }),
+                _mapper.Map<GroupChatRole>(new GroupChatRoleDTO
+                {
+                    GroupChatId = GroupChat.GroupChatId,
+                    RoleId = (int)RoleSeedEnum.MODERATOR_ROLE_ID,
+                })
+            };
+            _unitOfWork.GroupChatRoles.InsertRange(groupChatRoles);
+            // Add role with user
+            var userRoles = new List<UserRole>
+            {
+                _mapper.Map<UserRole>(new UserRoleDTO
+                {
+                    UserId = model.UserCreated,
+                    RoleId = (int)RoleSeedEnum.MEMBER_ROLE_ID
+                }),
+                _mapper.Map<UserRole>(new UserRoleDTO
+                {
+                    UserId = model.UserCreated,
+                    RoleId = (int)RoleSeedEnum.MODERATOR_ROLE_ID,
+                })
+            };
+            _unitOfWork.UserRoles.InsertRange(userRoles);
             _unitOfWork.Commit();
-            await _fakeDiscordHub.Clients.User(model.UserCreated.ToString()).SendAsync("GroupChatUpdated", model);
             return Ok("Create group chat success!");
         }
         [HttpPut("Update")]
@@ -99,7 +112,8 @@ namespace Presentations.Controllers
             _unitOfWork.GroupChats.Update(GroupChat);
             _unitOfWork.Save();
             _unitOfWork.Commit();
-            return Ok(new GetGroupChatDTO{
+            return Ok(new GetGroupChatDTO
+            {
                 GroupChatId = GroupChat.GroupChatId,
                 CoverImage = GroupChat.CoverImage,
                 Name = GroupChat.Name
@@ -113,7 +127,10 @@ namespace Presentations.Controllers
                 return BadRequest(ModelState); // Return bad request if the model is invalid
             }
             _unitOfWork.BeginTransaction();
+            var groupChat = _unitOfWork.GroupChats.GetById(id);
             _unitOfWork.GroupChats.Delete(id);
+            var userRoles = _unitOfWork.UserRoles.GetUserRolesByUserId(groupChat.UserCreated);
+            _unitOfWork.UserRoles.DeleteRange(userRoles);
             _unitOfWork.Commit();
             return Ok("Delete group chat success!");
         }
