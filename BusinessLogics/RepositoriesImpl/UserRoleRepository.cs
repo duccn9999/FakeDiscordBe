@@ -20,5 +20,30 @@ namespace BusinessLogics.RepositoriesImpl
             var result = _context.UserRoles.Where(x => x.UserId == userId).ToList();
             return result;
         }
+
+        public void ToggleAssignRole(bool isAssigned, int userId, int roleId)
+        {
+            var userRole = new UserRole
+            {
+                UserId = userId,
+                RoleId = roleId
+            };
+            if (userRole != null)
+            {
+                return;
+            }
+            else
+            {
+                if (isAssigned)
+                {
+                    _context.UserRoles.Remove(userRole);
+                }
+                else
+                {
+                    _context.UserRoles.Add(userRole);
+                }
+                _context.SaveChanges();
+            }
+        }
     }
 }

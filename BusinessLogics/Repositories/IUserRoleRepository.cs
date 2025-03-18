@@ -10,5 +10,6 @@ namespace BusinessLogics.Repositories
     public interface IUserRoleRepository : IGenericRepository<UserRole>
     {
         public List<UserRole> GetUserRolesByUserId(int userId);
+        public void ToggleAssignRole(bool isAssigned, int userId, int roleId);
     }
 }

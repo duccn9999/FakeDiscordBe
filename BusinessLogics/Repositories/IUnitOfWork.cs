@@ -17,6 +17,9 @@ namespace BusinessLogics.Repositories
         IRoleRepository Roles { get; }
         IGroupChatRoleRepository GroupChatRoles { get; }
         IUserRoleRepository UserRoles { get; }
+        IPermissionRepository Permissions { get; }
+        IRolePermissionRepository RolePermissions { get; }
+        IUserGroupChatRepository UserGroupChats { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();

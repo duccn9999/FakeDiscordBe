@@ -13,6 +13,7 @@ using Presentations.Middlewares;
 using Microsoft.AspNetCore.SignalR;
 using CloudinaryDotNet;
 using dotenv.net;
+using DataAccesses.Utils;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
@@ -102,8 +103,11 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IGroupChatRepository, GroupChatRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddSingleton<UserTracker>();
+builder.Services.AddSingleton<RandomStringGenerator>();
 var app = builder.Build();
 // add seed data
 using (var scope = app.Services.CreateScope())

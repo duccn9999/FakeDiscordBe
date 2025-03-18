@@ -3,6 +3,7 @@ using BusinessLogics.Repositories;
 using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
+using System.Security;
 
 namespace BusinessLogics.RepositoriesImpl
 {
@@ -19,8 +20,10 @@ namespace BusinessLogics.RepositoriesImpl
         public IMessageRepository _messageRepository;
         public IRoleRepository _roleRepository;
         public IGroupChatRoleRepository _groupChatRoles;
-
         public IUserRoleRepository _userRoles;
+        public IPermissionRepository _permissionRepository;
+        public IRolePermissionRepository _rolePermission;
+        public IUserGroupChatRepository _userGroupChat;
         public UnitOfWork(FakeDiscordContext context, IConfiguration config)
         {
             _context = context;
@@ -36,7 +39,10 @@ namespace BusinessLogics.RepositoriesImpl
         public IRoleRepository Roles => _roleRepository ??= new RoleRepository(_context);
         public IUserRoleRepository UserRoles => _userRoles ??= new UserRoleRepository(_context);
         public IGroupChatRoleRepository GroupChatRoles => _groupChatRoles ?? new GroupChatRoleRepository(_context);
+        public IPermissionRepository Permissions => _permissionRepository ??= new PermissionRepository(_context);
 
+        public IRolePermissionRepository RolePermissions => _rolePermission ??= new RolePermissionRepository(_context);
+        public IUserGroupChatRepository UserGroupChats => _userGroupChat ??= new UserGroupChatRepository(_context);
         public void BeginTransaction()
         {
             _transaction = _context.Database.BeginTransaction();

@@ -16,6 +16,7 @@ namespace DataAccesses.Profiles
         {
             CreateMap<CreateGroupChatDTO, GroupChat>();
             CreateMap<UpdateGroupChatDTO, GroupChat>();
+            CreateMap<GroupChat, GetGroupChatDTO>();
         }
 
     }

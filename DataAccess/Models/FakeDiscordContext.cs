@@ -17,7 +17,9 @@ namespace DataAccesses.Models
 
         public DbSet<GroupChatRole> GroupChatRoles { get; set; }
         public DbSet<UserRole> UserRoles { get; set; }
-
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<UserGroupChat> UserGroupChats { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserRole>()
@@ -38,17 +40,43 @@ namespace DataAccesses.Models
                 .HasForeignKey(ur => ur.RoleId);
 
             modelBuilder.Entity<GroupChatRole>()
-            .HasKey(ur => new { ur.GroupChatId, ur.RoleId }); // Composite primary key
+            .HasKey(gr => new { gr.GroupChatId, gr.RoleId }); // Composite primary key
 
             modelBuilder.Entity<GroupChatRole>()
-            .HasOne(ur => ur.GroupChat)
+            .HasOne(gr => gr.GroupChat)
             .WithMany(u => u.GroupChatRoles)
             .HasForeignKey(ur => ur.GroupChatId);
 
             modelBuilder.Entity<GroupChatRole>()
-                .HasOne(ur => ur.Role)
+                .HasOne(gr => gr.Role)
                 .WithMany(r => r.GroupChatRoles)
-                .HasForeignKey(ur => ur.RoleId);
+                .HasForeignKey(gr => gr.RoleId);
+
+
+            modelBuilder.Entity<RolePermission>()
+            .HasOne(rp => rp.Role)
+            .WithMany(u => u.RolePermissions)
+            .HasForeignKey(rp => rp.RoleId);
+
+            modelBuilder.Entity<RolePermission>()
+                .HasOne(rp => rp.Permission)
+                .WithMany(r => r.RolePermissions)
+                .HasForeignKey(rp => rp.PermissionId);
+            modelBuilder.Entity<RolePermission>()
+        .HasKey(rp => new { rp.RoleId, rp.PermissionId });
+
+
+            modelBuilder.Entity<UserGroupChat>()
+            .HasOne(rp => rp.User)
+            .WithMany(u => u.UserGroupChats)
+            .HasForeignKey(rp => rp.UserId);
+
+            modelBuilder.Entity<UserGroupChat>()
+                .HasOne(rp => rp.GroupChat)
+                .WithMany(r => r.UserGroupChats)
+                .HasForeignKey(rp => rp.GroupChatId);
+
+            modelBuilder.Entity<UserGroupChat>().HasKey(rp => new { rp.UserId, rp.GroupChatId });
         }
 
     }

@@ -17,5 +17,6 @@ namespace DataAccesses.Models
         public int? UserModified { get; set; }
         public IEnumerable<UserRole>? UserRoles { get; set; }
         public IEnumerable<GroupChatRole>? GroupChatRoles { get; set; }
+        public IEnumerable<RolePermission>? RolePermissions { get; set; }
     }
 }

@@ -22,13 +22,15 @@ namespace Presentations.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICloudinaryService _cloudinaryService;
+        private RandomStringGenerator _randomStringGenerator;
         const int MEMBER_ROLE_ID = 1;
         const int MODERATOR_ROLE_ID = 2;
-        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub, ICloudinaryService cloudinaryService)
+        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub, ICloudinaryService cloudinaryService, RandomStringGenerator randomStringGenerator)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
             _cloudinaryService = cloudinaryService;
+            _randomStringGenerator = randomStringGenerator;
         }
         [HttpGet("GetJoinedGroupChats/{userId}")]
         public async Task<IActionResult> GetJoinedGroupChats(int userId)
@@ -61,6 +63,7 @@ namespace Presentations.Controllers
             var uploadedCoverImage = await _cloudinaryService.UploadImage(model.CoverImage);
             model.CoverImage = uploadedCoverImage;
             var GroupChat = _mapper.Map<GroupChat>(model);
+            GroupChat.InviteCode = _randomStringGenerator.GenerateUniqueRandomString(7);
             _unitOfWork.GroupChats.Insert(GroupChat);
             _unitOfWork.Save();
             // Add role in group chat
@@ -134,6 +137,23 @@ namespace Presentations.Controllers
             _unitOfWork.Commit();
             return Ok("Delete group chat success!");
         }
+        [HttpPost("Invite")]
+        public async Task<IActionResult> Invite(UserGroupChat model)
+        {
+            return NoContent();
+        }
 
+        [HttpGet("[action]/{id}")]
+        public async Task<IActionResult> GetInviteCode(int id)
+        {
+            return Ok(_unitOfWork.GroupChats.GetById(id).InviteCode);
+        }
+        [HttpGet("[action]/{inviteCode}")]
+        public async Task<IActionResult> GetGroupChatByInviteCode(string inviteCode)
+        {
+            var GroupChat = await _unitOfWork.GroupChats.GetGroupChatByInviteCode(inviteCode);
+            var result = _mapper.Map<GetGroupChatDTO>(GroupChat);
+            return Ok(result);
+        }
     }
 }

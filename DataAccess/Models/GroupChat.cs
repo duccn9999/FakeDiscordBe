@@ -11,11 +11,14 @@ namespace DataAccesses.Models
         public int GroupChatId { get; set; }
         public string Name { get; set; }
         public string? CoverImage {  get; set; }
+        [MaxLength(7)]
+        public string InviteCode { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime? DateModified { get; set; }
         public int UserCreated { get; set; }
         public int? UserModified { get; set; }
         public IEnumerable<Channel>? Channels { get; set; }
         public IEnumerable<GroupChatRole>? GroupChatRoles { get; set; }
+        public IEnumerable<UserGroupChat>? UserGroupChats { get; set; }
     }
 }

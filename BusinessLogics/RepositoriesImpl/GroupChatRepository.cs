@@ -1,5 +1,6 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.GroupChats;
+using DataAccesses.DTOs.UserGroupChats;
 using DataAccesses.Models;
 using DataAccesses.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -11,15 +12,11 @@ namespace BusinessLogics.RepositoriesImpl
         private List<GetGroupChatDTO> GetGroupChat(int userId)
         {
             var result = from g in _context.GroupChats
-                         join gr in _context.GroupChatRoles
-                         on g.GroupChatId equals gr.GroupChatId
-                         join r in _context.Roles
-                         on gr.RoleId equals r.RoleId
-                         join ur in _context.UserRoles
-                         on r.RoleId equals ur.RoleId
+                         join ugc in _context.UserGroupChats
+                         on g.GroupChatId equals ugc.GroupChatId
                          join u in _context.Users
-                         on ur.UserId equals u.UserId
-                         where u.UserId == userId && ur.RoleId == (int)RoleSeedEnum.MEMBER_ROLE_ID
+                         on ugc.UserId equals u.UserId
+                         where u.UserId == userId
                          select new GetGroupChatDTO
                          {
                              GroupChatId = g.GroupChatId,
@@ -61,6 +58,12 @@ namespace BusinessLogics.RepositoriesImpl
         public async Task<IEnumerable<GetGroupChatDTO>> GetJoinedGroupChatsAsync(int userId)
         {
             return GetGroupChat(userId).AsEnumerable();
+        }
+
+        public async Task<GroupChat> GetGroupChatByInviteCode(string inviteCode)
+        {
+            var result = await _context.GroupChats.FirstOrDefaultAsync(x => x.InviteCode == inviteCode);
+            return result;
         }
     }
 }

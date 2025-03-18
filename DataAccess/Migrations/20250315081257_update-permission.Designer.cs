@@ -4,6 +4,7 @@ using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    partial class FakeDiscordContextModelSnapshot : ModelSnapshot
+    [Migration("20250315081257_update-permission")]
+    partial class updatepermission
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -72,11 +75,6 @@ namespace DataAccesses.Migrations
 
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
-
-                    b.Property<string>("InviteCode")
-                        .IsRequired()
-                        .HasMaxLength(7)
-                        .HasColumnType("nvarchar(7)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -278,21 +276,6 @@ namespace DataAccesses.Migrations
                     b.ToTable("User");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.UserGroupChat", b =>
-                {
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("GroupChatId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "GroupChatId");
-
-                    b.HasIndex("GroupChatId");
-
-                    b.ToTable("UserGroupChat");
-                });
-
             modelBuilder.Entity("DataAccesses.Models.UserRole", b =>
                 {
                     b.Property<int>("UserId")
@@ -384,25 +367,6 @@ namespace DataAccesses.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.UserGroupChat", b =>
-                {
-                    b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
-                        .WithMany("UserGroupChats")
-                        .HasForeignKey("GroupChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataAccesses.Models.User", "User")
-                        .WithMany("UserGroupChats")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GroupChat");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("DataAccesses.Models.UserRole", b =>
                 {
                     b.HasOne("DataAccesses.Models.Role", "Role")
@@ -432,8 +396,6 @@ namespace DataAccesses.Migrations
                     b.Navigation("Channels");
 
                     b.Navigation("GroupChatRoles");
-
-                    b.Navigation("UserGroupChats");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Permission", b =>
@@ -453,8 +415,6 @@ namespace DataAccesses.Migrations
             modelBuilder.Entity("DataAccesses.Models.User", b =>
                 {
                     b.Navigation("PrivateMessages");
-
-                    b.Navigation("UserGroupChats");
 
                     b.Navigation("UserRoles");
                 });
