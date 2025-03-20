@@ -44,8 +44,15 @@ namespace Presentations.Controllers
             _unitOfWork.BeginTransaction();
             var role = _mapper.Map<Role>(model);
             _unitOfWork.Roles.Insert(role);
+            _unitOfWork.Save();
+            var groupChatRole = new GroupChatRole
+            {
+                GroupChatId = model.GroupChatId,
+                RoleId = role.RoleId
+            };
+            _unitOfWork.GroupChatRoles.Insert(groupChatRole);
             _unitOfWork.Commit();
-            return Created("POST", role);
+            return Created("POST", model);
         }
 
         // PUT api/<RolesController>/5

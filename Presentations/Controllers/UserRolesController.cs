@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
+using DataAccesses.DTOs.UserRoles;
 using DataAccesses.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Presentations.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     public class UserRolesController : ControllerBase
     {
@@ -20,12 +21,50 @@ namespace Presentations.Controllers
         }
         // POST api/<UserRolesController>
         [HttpPost]
-        public async Task<IActionResult> Post(bool isAssigned, int roleId, int userId)
+        public async Task<IActionResult> AssignRole(AssignRolesDTO model)
         {
             _unitOfWork.BeginTransaction();
-            _unitOfWork.UserRoles.ToggleAssignRole(isAssigned, roleId, userId);
+            var userRoleDtos = new List<UserRoleDTO>();
+            model.UserIds.ForEach(id =>
+            {
+                userRoleDtos.Add(new UserRoleDTO
+                {
+                    UserId = id,
+                    RoleId = model.RoleId
+                });
+            });
+            var userRoles = _mapper.Map<List<UserRole>>(userRoleDtos);
+            _unitOfWork.UserRoles.InsertRange(userRoles);
             _unitOfWork.Commit();
             return NoContent();
+        }
+
+        [HttpGet("{groupChatId}")]
+        public async Task<IActionResult> GetNumberOfUserByEachRole(int groupChatId)
+        {
+            var result = _unitOfWork.UserRoles.GetNumberOfUserByEachRole(groupChatId);
+            return Ok(result);
+        }
+
+        [HttpGet("{groupChatId}/{roleId}")]
+        public async Task<IActionResult> GetNumberOfUserByRole(int groupChatId, int roleId)
+        {
+            var result = await _unitOfWork.UserRoles.GetNumberOfUserByRole(groupChatId, roleId);
+            return Ok(result);
+        }
+
+        [HttpGet("{groupChatId}/{roleId}")]
+        public async Task<IActionResult> GetUsersByEachRole(int groupChatId, int roleId)
+        {
+            var result = await _unitOfWork.UserRoles.GetUsersByEachRole(groupChatId, roleId);
+            return Ok(result);
+        }
+
+        [HttpGet("{groupChatId}/{roleId}")]
+        public async Task<IActionResult> GetUsersNotInRole(int groupChatId, int roleId)
+        {
+            var result = await _unitOfWork.UserRoles.GetUsersNotInRole(groupChatId, roleId);
+            return Ok(result);
         }
     }
 }

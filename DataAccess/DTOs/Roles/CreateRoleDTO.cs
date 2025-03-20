@@ -14,5 +14,6 @@ namespace DataAccesses.DTOs.Roles
         [JsonIgnore]
         public DateTime DateCreated { get; set; } = DateTime.Now;
         public int UserCreated { get; set; }
+        public int GroupChatId { get; set; }
     }
 }
