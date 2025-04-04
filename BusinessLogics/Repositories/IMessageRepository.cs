@@ -6,5 +6,7 @@ namespace BusinessLogics.Repositories
     public interface IMessageRepository : IGenericRepository<Message>
     {
         public Task<IAsyncEnumerable<GetMessageDTO>> GetMessagesPaginationByChannelIdAsync(int channelId,  int? page, int items);
+        public Task<IAsyncEnumerable<GetMessageDTO>> GetMessagesPaginationByPrivateChannelIdAsync(int channelId,  int? page, int items);
+
     }
 }

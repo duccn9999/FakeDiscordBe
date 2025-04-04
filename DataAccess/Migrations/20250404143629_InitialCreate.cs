@@ -19,6 +19,7 @@ namespace DataAccesses.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     CoverImage = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    InviteCode = table.Column<string>(type: "nvarchar(7)", maxLength: 7, nullable: false),
                     DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DateModified = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserCreated = table.Column<int>(type: "int", nullable: false),
@@ -30,21 +31,18 @@ namespace DataAccesses.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Role",
+                name: "Permission",
                 columns: table => new
                 {
-                    RoleId = table.Column<int>(type: "int", nullable: false)
+                    PermissionId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Color = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    UserCreated = table.Column<int>(type: "int", nullable: false),
-                    UserModified = table.Column<int>(type: "int", nullable: true)
+                    DisplayName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Role", x => x.RoleId);
+                    table.PrimaryKey("PK_Permission", x => x.PermissionId);
                 });
 
             migrationBuilder.CreateTable(
@@ -77,7 +75,8 @@ namespace DataAccesses.Migrations
                     DateModified = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserCreated = table.Column<int>(type: "int", nullable: false),
                     UserModified = table.Column<int>(type: "int", nullable: true),
-                    GroupChatId = table.Column<int>(type: "int", nullable: false)
+                    GroupChatId = table.Column<int>(type: "int", nullable: false),
+                    IsPrivate = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -91,26 +90,27 @@ namespace DataAccesses.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "GroupChatRoles",
+                name: "Role",
                 columns: table => new
                 {
-                    GroupChatId = table.Column<int>(type: "int", nullable: false),
                     RoleId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    RoleName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Color = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UserCreated = table.Column<int>(type: "int", nullable: false),
+                    UserModified = table.Column<int>(type: "int", nullable: true),
+                    GroupChatId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_GroupChatRoles", x => new { x.GroupChatId, x.RoleId });
+                    table.PrimaryKey("PK_Role", x => x.RoleId);
                     table.ForeignKey(
-                        name: "FK_GroupChatRoles_GroupChat_GroupChatId",
+                        name: "FK_Role_GroupChat_GroupChatId",
                         column: x => x.GroupChatId,
                         principalTable: "GroupChat",
                         principalColumn: "GroupChatId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_GroupChatRoles_Role_RoleId",
-                        column: x => x.RoleId,
-                        principalTable: "Role",
-                        principalColumn: "RoleId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -134,6 +134,112 @@ namespace DataAccesses.Migrations
                         column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserFriend",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId1 = table.Column<int>(type: "int", nullable: false),
+                    UserId2 = table.Column<int>(type: "int", nullable: false),
+                    Status = table.Column<bool>(type: "bit", nullable: false),
+                    RequestDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserFriend", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserFriend_User_UserId1",
+                        column: x => x.UserId1,
+                        principalTable: "User",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AllowedRole",
+                columns: table => new
+                {
+                    ChannelId = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AllowedRole", x => new { x.ChannelId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_AllowedRole_Channel_ChannelId",
+                        column: x => x.ChannelId,
+                        principalTable: "Channel",
+                        principalColumn: "ChannelId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "AllowedUser",
+                columns: table => new
+                {
+                    ChannelId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AllowedUser", x => new { x.ChannelId, x.UserId });
+                    table.ForeignKey(
+                        name: "FK_AllowedUser_Channel_ChannelId",
+                        column: x => x.ChannelId,
+                        principalTable: "Channel",
+                        principalColumn: "ChannelId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Message",
+                columns: table => new
+                {
+                    MessageId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserCreated = table.Column<int>(type: "int", nullable: false),
+                    ReplyTo = table.Column<int>(type: "int", nullable: true),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ChannelId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Message", x => x.MessageId);
+                    table.ForeignKey(
+                        name: "FK_Message_Channel_ChannelId",
+                        column: x => x.ChannelId,
+                        principalTable: "Channel",
+                        principalColumn: "ChannelId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "RolePermission",
+                columns: table => new
+                {
+                    RoleId = table.Column<int>(type: "int", nullable: false),
+                    PermissionId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RolePermission", x => new { x.RoleId, x.PermissionId });
+                    table.ForeignKey(
+                        name: "FK_RolePermission_Permission_PermissionId",
+                        column: x => x.PermissionId,
+                        principalTable: "Permission",
+                        principalColumn: "PermissionId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RolePermission_Role_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "Role",
+                        principalColumn: "RoleId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -162,39 +268,10 @@ namespace DataAccesses.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Message",
-                columns: table => new
-                {
-                    MessageId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserCreated = table.Column<int>(type: "int", nullable: false),
-                    ReplyTo = table.Column<int>(type: "int", nullable: true),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    DateCreated = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    DateModified = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    ChannelId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Message", x => x.MessageId);
-                    table.ForeignKey(
-                        name: "FK_Message_Channel_ChannelId",
-                        column: x => x.ChannelId,
-                        principalTable: "Channel",
-                        principalColumn: "ChannelId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_Channel_GroupChatId",
                 table: "Channel",
                 column: "GroupChatId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_GroupChatRoles_RoleId",
-                table: "GroupChatRoles",
-                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Message_ChannelId",
@@ -207,6 +284,21 @@ namespace DataAccesses.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Role_GroupChatId",
+                table: "Role",
+                column: "GroupChatId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RolePermission_PermissionId",
+                table: "RolePermission",
+                column: "PermissionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserFriend_UserId1",
+                table: "UserFriend",
+                column: "UserId1");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserRole_RoleId",
                 table: "UserRole",
                 column: "RoleId");
@@ -216,7 +308,10 @@ namespace DataAccesses.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "GroupChatRoles");
+                name: "AllowedRole");
+
+            migrationBuilder.DropTable(
+                name: "AllowedUser");
 
             migrationBuilder.DropTable(
                 name: "Message");
@@ -225,10 +320,19 @@ namespace DataAccesses.Migrations
                 name: "PrivateMessage");
 
             migrationBuilder.DropTable(
+                name: "RolePermission");
+
+            migrationBuilder.DropTable(
+                name: "UserFriend");
+
+            migrationBuilder.DropTable(
                 name: "UserRole");
 
             migrationBuilder.DropTable(
                 name: "Channel");
+
+            migrationBuilder.DropTable(
+                name: "Permission");
 
             migrationBuilder.DropTable(
                 name: "Role");

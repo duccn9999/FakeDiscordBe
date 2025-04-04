@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    [Migration("20250317113439_AddInviteCode")]
-    partial class AddInviteCode
+    [Migration("20250404143629_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,32 @@ namespace DataAccesses.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("DataAccesses.Models.AllowedRole", b =>
+                {
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChannelId", "RoleId");
+
+                    b.ToTable("AllowedRole");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.AllowedUser", b =>
+                {
+                    b.Property<int>("ChannelId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ChannelId", "UserId");
+
+                    b.ToTable("AllowedUser");
+                });
 
             modelBuilder.Entity("DataAccesses.Models.Channel", b =>
                 {
@@ -45,6 +71,9 @@ namespace DataAccesses.Migrations
 
                     b.Property<int>("GroupChatId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("IsPrivate")
+                        .HasColumnType("bit");
 
                     b.Property<int>("UserCreated")
                         .HasColumnType("int");
@@ -78,7 +107,8 @@ namespace DataAccesses.Migrations
 
                     b.Property<string>("InviteCode")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(7)
+                        .HasColumnType("nvarchar(7)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -93,21 +123,6 @@ namespace DataAccesses.Migrations
                     b.HasKey("GroupChatId");
 
                     b.ToTable("GroupChat");
-                });
-
-            modelBuilder.Entity("DataAccesses.Models.GroupChatRole", b =>
-                {
-                    b.Property<int>("GroupChatId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("RoleId")
-                        .HasColumnType("int");
-
-                    b.HasKey("GroupChatId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("GroupChatRole");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Message", b =>
@@ -155,7 +170,11 @@ namespace DataAccesses.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Value")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -213,6 +232,9 @@ namespace DataAccesses.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("GroupChatId")
+                        .HasColumnType("int");
+
                     b.Property<string>("RoleName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -224,6 +246,8 @@ namespace DataAccesses.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("RoleId");
+
+                    b.HasIndex("GroupChatId");
 
                     b.ToTable("Role");
                 });
@@ -280,6 +304,33 @@ namespace DataAccesses.Migrations
                     b.ToTable("User");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.UserFriend", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("RequestDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("UserId1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId2")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("UserFriend");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.UserRole", b =>
                 {
                     b.Property<int>("UserId")
@@ -300,6 +351,28 @@ namespace DataAccesses.Migrations
                     b.ToTable("UserRole");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.AllowedRole", b =>
+                {
+                    b.HasOne("DataAccesses.Models.Channel", "Channel")
+                        .WithMany("AllowedRoles")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.AllowedUser", b =>
+                {
+                    b.HasOne("DataAccesses.Models.Channel", "Channel")
+                        .WithMany("AllowedUsers")
+                        .HasForeignKey("ChannelId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Channel");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.Channel", b =>
                 {
                     b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
@@ -309,25 +382,6 @@ namespace DataAccesses.Migrations
                         .IsRequired();
 
                     b.Navigation("GroupChat");
-                });
-
-            modelBuilder.Entity("DataAccesses.Models.GroupChatRole", b =>
-                {
-                    b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
-                        .WithMany("GroupChatRoles")
-                        .HasForeignKey("GroupChatId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("DataAccesses.Models.Role", "Role")
-                        .WithMany("GroupChatRoles")
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("GroupChat");
-
-                    b.Navigation("Role");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Message", b =>
@@ -352,6 +406,17 @@ namespace DataAccesses.Migrations
                     b.Navigation("UserCreated");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.Role", b =>
+                {
+                    b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
+                        .WithMany("Roles")
+                        .HasForeignKey("GroupChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GroupChat");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.RolePermission", b =>
                 {
                     b.HasOne("DataAccesses.Models.Permission", "Permission")
@@ -369,6 +434,17 @@ namespace DataAccesses.Migrations
                     b.Navigation("Permission");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.UserFriend", b =>
+                {
+                    b.HasOne("DataAccesses.Models.User", "User1")
+                        .WithMany("FriendsAsUser1")
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User1");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.UserRole", b =>
@@ -392,6 +468,10 @@ namespace DataAccesses.Migrations
 
             modelBuilder.Entity("DataAccesses.Models.Channel", b =>
                 {
+                    b.Navigation("AllowedRoles");
+
+                    b.Navigation("AllowedUsers");
+
                     b.Navigation("Messages");
                 });
 
@@ -399,7 +479,7 @@ namespace DataAccesses.Migrations
                 {
                     b.Navigation("Channels");
 
-                    b.Navigation("GroupChatRoles");
+                    b.Navigation("Roles");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Permission", b =>
@@ -409,8 +489,6 @@ namespace DataAccesses.Migrations
 
             modelBuilder.Entity("DataAccesses.Models.Role", b =>
                 {
-                    b.Navigation("GroupChatRoles");
-
                     b.Navigation("RolePermissions");
 
                     b.Navigation("UserRoles");
@@ -418,6 +496,8 @@ namespace DataAccesses.Migrations
 
             modelBuilder.Entity("DataAccesses.Models.User", b =>
                 {
+                    b.Navigation("FriendsAsUser1");
+
                     b.Navigation("PrivateMessages");
 
                     b.Navigation("UserRoles");

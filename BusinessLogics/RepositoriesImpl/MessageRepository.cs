@@ -29,5 +29,28 @@ namespace BusinessLogics.RepositoriesImpl
                          };
             return result.Skip((page.Value - 1) * items).Take(items).AsAsyncEnumerable();
         }
+
+        public async Task<IAsyncEnumerable<GetMessageDTO>> GetMessagesPaginationByPrivateChannelIdAsync(int channelId, int? page, int items)
+        {
+            var result = from m in _context.Messages
+                         join c in _context.Channels
+                         on m.ChannelId equals c.ChannelId
+                         join u in _context.Users
+                         on m.UserCreated equals u.UserId
+                         where c.ChannelId == channelId
+                         orderby m.DateCreated descending
+                         select new GetMessageDTO
+                         {
+                             MessageId = m.MessageId,
+                             Username = u.UserName,
+                             Avatar = u.Avatar,
+                             ReplyTo = m.ReplyTo,
+                             Content = m.Content,
+                             DateCreated = m.DateCreated,
+                             DateModified = m.DateModified,
+                             ChannelId = m.ChannelId,
+                         };
+            return result.Skip((page.Value - 1) * items).Take(items).AsAsyncEnumerable();
+        }
     }
 }

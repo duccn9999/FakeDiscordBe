@@ -7,9 +7,9 @@ namespace DataAccesses.Models
     public class Permission
     {
         [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int PermissionId { get; set; }
-        public string Name { get; set; }
+        public string DisplayName { get; set; }
+        public string Value { get; set; }
         public string? Description { get; set; }
         public IEnumerable<RolePermission>? RolePermissions { get; set; }
     }

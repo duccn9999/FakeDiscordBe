@@ -1,15 +1,9 @@
-﻿using DataAccesses.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace DataAccesses.DTOs.Channels
 {
-    public class CreateChannelDTO
+    public class CreatePrivateChannelDTO
     {
         [Required]
         public string ChannelName { get; set; }
@@ -18,6 +12,8 @@ namespace DataAccesses.DTOs.Channels
         public int UserCreated { get; set; }
         public int GroupChatId { get; set; }
         [JsonIgnore]
-        public bool IsPrivate { get; set; } = false;
+        public bool IsPrivate { get; set; } = true;
+        public IEnumerable<int> Roles { get; set; }
+        public IEnumerable<int> Users { get; set; }
     }
 }

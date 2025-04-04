@@ -1,12 +1,8 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.UserRoles;
 using DataAccesses.Models;
+using DataAccesses.Utils;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLogics.RepositoriesImpl
 {
@@ -17,48 +13,73 @@ namespace BusinessLogics.RepositoriesImpl
 
         }
 
+        public List<GetAllRolesByUserDTO> GetAllRolesByUser(int userId)
+        {
+            var query = from r in _context.Roles
+                        join ur in _context.UserRoles
+                        on r.RoleId equals ur.RoleId
+                        where ur.UserId == userId
+                        select new GetAllRolesByUserDTO
+                        {
+                            GroupChatId = r.GroupChatId,
+                            RoleId = r.RoleId,
+                            RoleName = r.RoleName
+                        };
+            return query.ToList();
+        }
+
         public List<GetNumberOfUserByEachRoleDTO> GetNumberOfUserByEachRole(int groupChatId)
         {
-            var result = _context.Roles
-                .GroupJoin(
-                    _context.UserRoles
-                        .Join(_context.GroupChatRoles,
-                            userRole => userRole.RoleId,
-                            groupChatRole => groupChatRole.RoleId,
-                            (userRole, groupChatRole) => new { userRole.RoleId, groupChatRole.GroupChatId, userRole.UserId }
-                        )
-                        .Where(x => x.GroupChatId == groupChatId), // Ensure filtering happens before join
-                    role => role.RoleId,
-                    userRoleGroup => userRoleGroup.RoleId,
-                    (role, userRoleGroup) => new GetNumberOfUserByEachRoleDTO
-                    {
-                        RoleId = role.RoleId,
-                        RoleName = role.RoleName,
-                        GroupChatId = groupChatId, // Since all records are filtered by this, it can be assigned directly
-                        Total = userRoleGroup.Count()
-                    }
-                )
-                .ToList();
-
-            return result;
+            var query = from r in _context.Roles
+                        join ur in _context.UserRoles
+                        on r.RoleId equals ur.RoleId
+                        into urGroup
+                        from ur in urGroup.DefaultIfEmpty()
+                        join u in _context.Users
+                        on ur.UserId equals u.UserId
+                        into uGroup
+                        from u in uGroup.DefaultIfEmpty()
+                        group u by new { r.RoleId, r.RoleName, r.GroupChatId } into grouped
+                        where grouped.Key.GroupChatId == groupChatId && (grouped.Key.RoleName != RolesSeed.ADMINISTRATOR_ROLE && grouped.Key.RoleName != RolesSeed.MEMBER_ROLE)
+                        select new GetNumberOfUserByEachRoleDTO
+                        {
+                            RoleId = grouped.Key.RoleId,
+                            RoleName = grouped.Key.RoleName,
+                            GroupChatId = grouped.Key.GroupChatId,
+                            Total = grouped.Count(u => u != null)
+                        };
+            return query.ToList();
         }
 
         public async Task<GetNumberOfUserByEachRoleDTO> GetNumberOfUserByRole(int groupChatId, int roleId)
         {
             var query = from r in _context.Roles
-                        join gcr in _context.GroupChatRoles on r.RoleId equals gcr.RoleId
-                        join g in _context.GroupChats on gcr.GroupChatId equals g.GroupChatId
                         join ur in _context.UserRoles on r.RoleId equals ur.RoleId into urGroup
-                        where g.GroupChatId == groupChatId && r.RoleId == roleId
+                        where r.GroupChatId == groupChatId && r.RoleId == roleId
                         select new GetNumberOfUserByEachRoleDTO
                         {
                             RoleId = r.RoleId,
                             RoleName = r.RoleName,
-                            GroupChatId = g.GroupChatId,
+                            GroupChatId = r.GroupChatId,
                             Total = urGroup.Count()
                         };
 
             var result = await query.FirstOrDefaultAsync();
+            return result;
+        }
+
+        public async Task<List<UserRoleDTO>> GetRolesByUserInGroupChat(int groupChatId, int userId)
+        {
+            var query = from ur in _context.UserRoles
+                        join r in _context.Roles
+                        on ur.RoleId equals r.RoleId
+                        where ur.UserId == userId && r.GroupChatId == groupChatId
+                        select new UserRoleDTO
+                        {
+                            UserId = ur.UserId,
+                            RoleId = r.RoleId,
+                        };
+            var result = await query.ToListAsync();
             return result;
         }
 
@@ -71,36 +92,37 @@ namespace BusinessLogics.RepositoriesImpl
         public async Task<List<GetUsersByEachRoleDTO>> GetUsersByEachRole(int groupChatId, int roleId)
         {
             var query = from r in _context.Roles
-                        join ur in _context.UserRoles on r.RoleId equals ur.RoleId into urGroup
-                        from ur in urGroup.DefaultIfEmpty() // LEFT JOIN on UserRole
-                        join gcr in _context.GroupChatRoles on r.RoleId equals gcr.RoleId
-                        join u in _context.Users on ur.UserId equals u.UserId
-                        where r.RoleId == roleId && gcr.GroupChatId == groupChatId
+                        join ur in _context.UserRoles
+                        on r.RoleId equals ur.RoleId
+                        join u in _context.Users
+                        on ur.UserId equals u.UserId
+                        where r.RoleId == roleId && r.GroupChatId == groupChatId
                         select new GetUsersByEachRoleDTO
                         {
                             UserId = u.UserId,
                             UserName = u.UserName,
-                            GroupChatId = gcr.GroupChatId,
+                            GroupChatId = r.GroupChatId,
                             RoleId = r.RoleId
                         };
             var result = await query.ToListAsync();
             return result;
         }
 
-        public async Task<List<GetUserNotInRoleDTO>> GetUsersNotInRole(int groupChatId, int roleId)
+        public async Task<List<GetUsersNotInRoleDTO>> GetUsersNotInRole(int groupChatId, int roleId)
         {
-            var query = from ur in _context.UserRoles
-                        join u in _context.Users on ur.UserId equals u.UserId
-                        join ugc in _context.UserGroupChats on u.UserId equals ugc.UserId
-                        where ugc.GroupChatId == groupChatId && ur.RoleId != roleId
-                        select new GetUserNotInRoleDTO
-                        {
-                            UserId = u.UserId,
-                            CoverImage = u.CoverImage,
-                            UserName = u.UserName
-                        };
-            var result = await query.Distinct().ToListAsync();
-            return result;
+            var query = (from r in _context.Roles
+                         join ur in _context.UserRoles on r.RoleId equals ur.RoleId into urGroup
+                         from ur in urGroup.DefaultIfEmpty()
+                         join u in _context.Users on ur.UserId equals u.UserId into uGroup
+                         from u in uGroup.DefaultIfEmpty()
+                         where r.GroupChatId == groupChatId && (ur != null && ur.RoleId != roleId)
+                         select new GetUsersNotInRoleDTO
+                         {
+                             UserId = u.UserId,
+                             CoverImage = u.CoverImage,
+                             UserName = u.UserName
+                         }).Distinct();
+            return query.ToList();
         }
     }
 }

@@ -18,5 +18,8 @@ namespace DataAccesses.Models
         public int GroupChatId { get; set; }
         [ForeignKey("GroupChatId")]
         public GroupChat GroupChat { get; set; }
+        public bool IsPrivate { get; set; }
+        public IEnumerable<AllowedRole>? AllowedRoles { get; set; }
+        public IEnumerable<AllowedUser>? AllowedUsers { get; set; }
     }
 }

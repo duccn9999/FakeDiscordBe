@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
-using DataAccesses.DTOs.Permissions;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Presentations.Controllers
 {
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     public class PermissionsController : ControllerBase
     {
@@ -25,5 +24,6 @@ namespace Presentations.Controllers
             var result = _unitOfWork.Permissions.GetPermissions();
             return Ok(result);
         }
+
     }
 }

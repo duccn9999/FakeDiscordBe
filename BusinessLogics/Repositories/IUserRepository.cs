@@ -10,5 +10,6 @@ namespace BusinessLogics.Repositories
         public Task<bool> CheckEmailDuplicatedAsync(string email);
         public Task<bool> CheckAccoutExistedAsync(string userName, string password);
         public User GetByUserName(string userName);
+        public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId);
     }
 }

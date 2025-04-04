@@ -1,4 +1,5 @@
 ﻿using BusinessLogics.Repositories;
+using CloudinaryDotNet.Actions;
 using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,26 @@ namespace BusinessLogics.RepositoriesImpl
         {
             var user = table.FirstOrDefault(x => x.UserName == userName);
             return user;
+        }
+
+        public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId)
+        {
+            var users = from u in _context.Users
+                        join
+                        ur in _context.UserRoles
+                        on u.UserId equals ur.UserId
+                        join r in _context.Roles
+                        on ur.RoleId equals r.RoleId
+                        join g in _context.GroupChats
+                        on r.GroupChatId equals g.GroupChatId
+                        where g.GroupChatId == groupChatId
+                        select new GetUserDTO
+                        {
+                            UserId = u.UserId,
+                            UserName = u.UserName,
+                            Avatar = u.Avatar,
+                        };
+            return users.Distinct().AsEnumerable();
         }
     }
 }

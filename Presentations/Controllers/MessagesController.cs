@@ -2,6 +2,7 @@
 using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Messages;
 using DataAccesses.Models;
+using DataAccesses.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,20 +24,20 @@ namespace Presentations.Controllers
         }
         // GET: api/<MessagesController>
         [HttpGet("GetMessages")]
-        public async Task<IActionResult> Get(int custom, int? page, int items)
+        [Authorize(Policy = "VIEW_MESSAGES")]
+        public async Task<IActionResult> GetMessage(int custom, int? page = 1, int items = 10)
         {
             var result = await _unitOfWork.Messages.GetMessagesPaginationByChannelIdAsync(custom, page, items);
             return Ok(result);
         }
-
-        // GET api/<MessagesController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+        [HttpGet("GetPrivateMessages")]
+        public async Task<IActionResult> GetPrivateMessage(int custom, int? page, int items)
         {
-            return "value";
+            var result = await _unitOfWork.Messages.GetMessagesPaginationByPrivateChannelIdAsync(custom, page, items);
+            return Ok(result);
         }
-
         // POST api/<MessagesController>
+        [Authorize(Policy = Permissions.CAN_SEND_MESSAGES)]
         [HttpPost("CreateMessage")]
         public async Task<IActionResult> Post(CreateMessageDTO model)
         {

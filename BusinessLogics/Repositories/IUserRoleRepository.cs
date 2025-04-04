@@ -9,6 +9,8 @@ namespace BusinessLogics.Repositories
         public List<GetNumberOfUserByEachRoleDTO> GetNumberOfUserByEachRole(int groupChatId);
         public Task<GetNumberOfUserByEachRoleDTO> GetNumberOfUserByRole(int groupChatId, int roleId);
         public Task<List<GetUsersByEachRoleDTO>> GetUsersByEachRole(int groupChatId, int roleId);
-        public Task<List<GetUserNotInRoleDTO>> GetUsersNotInRole(int groupChatId, int roleId);
+        public Task<List<GetUsersNotInRoleDTO>> GetUsersNotInRole(int groupChatId, int roleId);
+        public Task<List<UserRoleDTO>> GetRolesByUserInGroupChat(int groupChatId, int userId);
+        public List<GetAllRolesByUserDTO> GetAllRolesByUser(int userId);
     }
 }

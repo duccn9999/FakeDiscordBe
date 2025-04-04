@@ -21,6 +21,7 @@ namespace DataAccesses.Models
         public DateTime? DateModified { get; set; }
         public IEnumerable<PrivateMessage>? PrivateMessages { get; set; }
         public IEnumerable<UserRole> UserRoles { get; set; }
-        public IEnumerable<UserGroupChat> UserGroupChats { get; set; }
+        [InverseProperty("User1")]
+        public ICollection<UserFriend> FriendsAsUser1 { get; set; }
     }
 }

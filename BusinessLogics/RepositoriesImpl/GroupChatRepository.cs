@@ -11,12 +11,14 @@ namespace BusinessLogics.RepositoriesImpl
     {
         private List<GetGroupChatDTO> GetGroupChat(int userId)
         {
-            var result = from g in _context.GroupChats
-                         join ugc in _context.UserGroupChats
-                         on g.GroupChatId equals ugc.GroupChatId
-                         join u in _context.Users
-                         on ugc.UserId equals u.UserId
-                         where u.UserId == userId
+            var result = from u in _context.Users
+                         join ur in _context.UserRoles
+                         on u.UserId equals ur.UserId
+                         join r in _context.Roles
+                         on ur.RoleId equals r.RoleId
+                         join g in _context.GroupChats
+                         on r.GroupChatId equals g.GroupChatId
+                         where u.UserId == userId && r.RoleName == RolesSeed.MEMBER_ROLE
                          select new GetGroupChatDTO
                          {
                              GroupChatId = g.GroupChatId,

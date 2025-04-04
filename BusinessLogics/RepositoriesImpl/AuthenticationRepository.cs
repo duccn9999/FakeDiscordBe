@@ -4,6 +4,7 @@ using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -13,10 +14,12 @@ namespace BusinessLogics.RepositoriesImpl
     {
         private readonly IConfiguration _config;
         private readonly IUserRepository _users;
-        public AuthenticationRepository(IUserRepository users, IConfiguration config)
+        private readonly IUserRoleRepository _userRoles;
+        public AuthenticationRepository(IUserRepository users, IConfiguration config, IUserRoleRepository userRoles)
         {
             _users = users;
             _config = config;
+            _userRoles = userRoles;
         }
         public string GenerateJSONWebToken(LoginUserDTO model)
         {
@@ -29,9 +32,10 @@ namespace BusinessLogics.RepositoriesImpl
                 new("username", user.UserName),
                 new("password", user.Password),
                 new("email", user.Email),
-                new(ClaimTypes.Role, "Member"),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
+            var roleClaims = _userRoles.GetAllRolesByUser(user.UserId);
+            claims.Add(new Claim("roles", JsonConvert.SerializeObject(roleClaims)));
             // need claims
             var token = new JwtSecurityToken(
               null,

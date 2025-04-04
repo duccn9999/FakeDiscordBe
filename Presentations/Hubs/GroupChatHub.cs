@@ -8,7 +8,7 @@ using DataAccesses.DTOs.Channels;
 
 namespace Presentations.Hubs
 {
-    [Authorize(Roles = "Member")]
+    [Authorize]
     public class GroupChatHub : Hub
     {
         private readonly IUnitOfWork _unitOfWork;

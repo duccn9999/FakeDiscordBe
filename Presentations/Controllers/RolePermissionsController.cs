@@ -38,5 +38,14 @@ namespace Presentations.Controllers
             var result = _unitOfWork.RolePermissions.GetRolePermissionsByRoleId(roleId);
             return Ok(result);
         }
+
+        [HttpGet]
+        public IActionResult GetPermissionName([FromQuery] string roleIds)
+        {
+            // Convert the comma-separated string to a list of integers
+            var permissionIdList = roleIds.Split(',').Select(int.Parse).ToList();
+            var result = _unitOfWork.RolePermissions.GetPermissionNameByRoleIds(permissionIdList);
+            return Ok(result);
+        }
     }
 }

@@ -3,6 +3,8 @@ using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Channels;
 using DataAccesses.DTOs.Roles;
 using DataAccesses.Models;
+using DataAccesses.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -11,6 +13,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize(Policy = Permissions.CAN_MANAGE_ROLES)]
     public class RolesController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -21,17 +24,26 @@ namespace Presentations.Controllers
             _unitOfWork = unitOfWork;
         }
         // GET: api/<RolesController>
-        [HttpGet]
-        public async Task<IActionResult> Get()
+        [HttpGet("GetRolesByGroupChat/{groupChatId}")]
+        [Authorize(Policy = Permissions.CAN_MANAGE_CHANNELS)]
+        public async Task<IActionResult> Get(int groupChatId)
         {
-            return Ok(_unitOfWork.Roles.GetAll());
+            var result = _unitOfWork.Roles.GetAll()
+            .Where(x => x.GroupChatId == groupChatId && x.RoleName != "ADMINISTRATOR" && x.RoleName != "MEMBER")
+            .Select(x => new GetRoleDTO
+            {
+                RoleId = x.RoleId,
+                RoleName = x.RoleName,
+                Color = x.Color
+            });
+            return Ok(result);
         }
 
         // GET api/<RolesController>/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        [HttpGet("{groupChatId}/{roleId}")]
+        public async Task<IActionResult> Get(int roleId, int groupChatId)
         {
-            return Ok(_unitOfWork.Roles.GetById(id));
+            return Ok(_unitOfWork.Roles.GetById(roleId));
         }
         // POST api/<RolesController>
         [HttpPost]
@@ -45,12 +57,7 @@ namespace Presentations.Controllers
             var role = _mapper.Map<Role>(model);
             _unitOfWork.Roles.Insert(role);
             _unitOfWork.Save();
-            var groupChatRole = new GroupChatRole
-            {
-                GroupChatId = model.GroupChatId,
-                RoleId = role.RoleId
-            };
-            _unitOfWork.GroupChatRoles.Insert(groupChatRole);
+
             _unitOfWork.Commit();
             return Created("POST", model);
         }
@@ -72,15 +79,15 @@ namespace Presentations.Controllers
         }
 
         // DELETE api/<RolesController>/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        [HttpDelete("{roleId}")]
+        public async Task<IActionResult> Delete(int roleId)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState); // Return bad request if the model is invalid
             }
             _unitOfWork.BeginTransaction();
-            _unitOfWork.Roles.Delete(id);
+            _unitOfWork.Roles.Delete(roleId);
             _unitOfWork.Commit();
             return NoContent();
         }

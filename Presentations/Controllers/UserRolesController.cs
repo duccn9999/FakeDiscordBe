@@ -2,6 +2,8 @@
 using BusinessLogics.Repositories;
 using DataAccesses.DTOs.UserRoles;
 using DataAccesses.Models;
+using DataAccesses.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -10,6 +12,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]/[action]")]
     [ApiController]
+    [Authorize(Policy = Permissions.CAN_MANAGE_ROLES)]
     public class UserRolesController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

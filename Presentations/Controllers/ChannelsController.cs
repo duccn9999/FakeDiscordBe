@@ -3,6 +3,8 @@ using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Channels;
 using DataAccesses.DTOs.GroupChatParticipations;
 using DataAccesses.Models;
+using DataAccesses.Utils;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Presentations.Hubs;
@@ -11,7 +13,7 @@ using Presentations.Hubs;
 
 namespace Presentations.Controllers
 {
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     [ApiController]
     public class ChannelsController : ControllerBase
     {
@@ -23,16 +25,15 @@ namespace Presentations.Controllers
             _mapper = mapper;
         }
         // GET: api/<ChannelsController>
-        [HttpGet("{groupChatId}")]
-        public async Task<IActionResult> GetChannelsByGroupChatId(int groupChatId)
+        [HttpGet("{groupChatId}/{userId}")]
+        public async Task<IActionResult> GetChannelsByGroupChatId(int groupChatId, int userId)
         {
-            var result = _unitOfWork.Channels.GetChannelsByGroupChatId(groupChatId);
+            var result = _unitOfWork.Channels.GetChannelsByGroupChatId(groupChatId, userId);
             return Ok(result);
-
         }
-
         // POST api/<ChannelsController>
-        [HttpPost("CreateChannel")]
+        [HttpPost]
+        [Authorize(Policy = Permissions.CAN_MANAGE_CHANNELS)]
         public async Task<IActionResult> CreateChannel(CreateChannelDTO model)
         {
             if (!ModelState.IsValid)
@@ -47,7 +48,8 @@ namespace Presentations.Controllers
         }
 
         // PUT api/<ChannelsController>/5
-        [HttpPut("UpdateChannel")]
+        [HttpPut]
+        [Authorize(Policy = Permissions.CAN_MANAGE_CHANNELS)]
         public async Task<IActionResult> UpdateChannel(UpdateChannelDTO model)
         {
             if (!ModelState.IsValid)
@@ -56,7 +58,7 @@ namespace Presentations.Controllers
             }
             _unitOfWork.BeginTransaction();
             var channel = await _unitOfWork.Channels.GetByIdAsync(model.ChannelId);
-             _mapper.Map(model, channel);
+            _mapper.Map(model, channel);
             _unitOfWork.Channels.Update(channel);
             _unitOfWork.Commit();
             return Ok(new GetChannelDTO
@@ -67,17 +69,55 @@ namespace Presentations.Controllers
         }
 
         // DELETE api/<ChannelsController>/5
-        [HttpDelete("DeleteChannel/{id}")]
-        public async Task<IActionResult> DeleteChannel(int id)
+        [HttpDelete("{channelId}")]
+        [Authorize(Policy = Permissions.CAN_MANAGE_CHANNELS)]
+        public async Task<IActionResult> DeleteChannel(int channelId)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState); // Return bad request if the model is invalid
             }
             _unitOfWork.BeginTransaction();
-            _unitOfWork.Channels.Delete(id);
+            _unitOfWork.Channels.Delete(channelId);
             _unitOfWork.Commit();
             return NoContent();
+        }
+        [HttpPost]
+        [Authorize(Policy = Permissions.CAN_MANAGE_CHANNELS)]
+        public async Task<IActionResult> CreatePrivateChannel(CreatePrivateChannelDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+            _unitOfWork.BeginTransaction();
+            var channelDto = new CreateChannelDTO
+            {
+                ChannelName = model.ChannelName,
+                GroupChatId = model.GroupChatId,
+                UserCreated = model.UserCreated,
+            };
+            var channel = _mapper.Map<Channel>(channelDto);
+            _unitOfWork.Channels.Insert(channel);
+            _unitOfWork.Save();
+            var rolesInChannelDto = model.Roles;
+            var usersInChannelDto = model.Users;
+            var rolesInChannel = rolesInChannelDto
+            .Select(roleId => new AllowedRole
+            {
+                ChannelId = channel.ChannelId,
+                RoleId = roleId
+            })
+            .ToList();
+            var usersInChannel = usersInChannelDto.Select(userId => new AllowedUser
+            {
+                ChannelId = channel.ChannelId,
+                UserId = userId,
+            }).ToList();
+            await _unitOfWork.AllowedRoles.InsertRangeAsync(rolesInChannel);
+            await _unitOfWork.AllowedUsers.InsertRangeAsync(usersInChannel);
+            _unitOfWork.Commit();
+            return Created("CreateChannel", new GetChannelDTO { ChannelId = channel.ChannelId, ChannelName = channel.ChannelName });
         }
     }
 }

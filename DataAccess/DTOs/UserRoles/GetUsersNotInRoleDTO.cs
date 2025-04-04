@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace DataAccesses.DTOs.UserRoles
 {
-    public class GetUserNotInRoleDTO
+    public class GetUsersNotInRoleDTO
     {
         public int UserId { get; set; }
         public string UserName { get; set; }
-        public string CoverImage { get; set; }
+        public string? CoverImage { get; set; }
     }
 }

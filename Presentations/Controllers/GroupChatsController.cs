@@ -1,9 +1,10 @@
 ﻿
 using AutoMapper;
 using BusinessLogics.Repositories;
-using DataAccesses.DTOs.GroupChatParticipations;
-using DataAccesses.DTOs.GroupChatRoles;
 using DataAccesses.DTOs.GroupChats;
+using DataAccesses.DTOs.RolePermissions;
+using DataAccesses.DTOs.Roles;
+using DataAccesses.DTOs.UserGroupChats;
 using DataAccesses.DTOs.UserRoles;
 using DataAccesses.Models;
 using DataAccesses.Utils;
@@ -16,15 +17,12 @@ namespace Presentations.Controllers
 {
     [Route("[controller]")]
     [ApiController]
-    [Authorize(Roles = "Member")]
     public class GroupChatsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ICloudinaryService _cloudinaryService;
         private RandomStringGenerator _randomStringGenerator;
-        const int MEMBER_ROLE_ID = 1;
-        const int MODERATOR_ROLE_ID = 2;
         public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub, ICloudinaryService cloudinaryService, RandomStringGenerator randomStringGenerator)
         {
             _unitOfWork = unitOfWork;
@@ -67,32 +65,98 @@ namespace Presentations.Controllers
             _unitOfWork.GroupChats.Insert(GroupChat);
             _unitOfWork.Save();
             // Add role in group chat
-            var groupChatRoles = new List<GroupChatRole>
+            var roles = new List<Role>()
             {
-                _mapper.Map<GroupChatRole>(new GroupChatRoleDTO
+                _mapper.Map<Role>(new CreateRoleDTO
                 {
-                    GroupChatId = GroupChat.GroupChatId,
-                    RoleId = (int)RoleSeedEnum.MEMBER_ROLE_ID
+                RoleName = RolesSeed.ADMINISTRATOR_ROLE,
+                Color = "#ffffff",
+                UserCreated = model.UserCreated,
+                GroupChatId = GroupChat.GroupChatId
                 }),
-                _mapper.Map<GroupChatRole>(new GroupChatRoleDTO
+                _mapper.Map<Role>(new CreateRoleDTO
                 {
-                    GroupChatId = GroupChat.GroupChatId,
-                    RoleId = (int)RoleSeedEnum.MODERATOR_ROLE_ID,
+                RoleName = RolesSeed.MEMBER_ROLE,
+                Color = "#ffffff",
+                UserCreated = model.UserCreated,
+                GroupChatId = GroupChat.GroupChatId
                 })
             };
-            _unitOfWork.GroupChatRoles.InsertRange(groupChatRoles);
+            _unitOfWork.Roles.InsertRange(roles);
+            _unitOfWork.Save();
+            // Add permissions with role
+            var adminRole = _unitOfWork.Roles.GetAll().FirstOrDefault(x => x.RoleName == RolesSeed.ADMINISTRATOR_ROLE && x.GroupChatId == GroupChat.GroupChatId);
+            var memberRole = _unitOfWork.Roles.GetAll().FirstOrDefault(x => x.RoleName == RolesSeed.MEMBER_ROLE && x.GroupChatId == GroupChat.GroupChatId);
+            var adminPermissions = new List<RolePermission>()
+            {
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = adminRole.RoleId,
+                    PermissionId = PermissionsId.CAN_MANAGE_CHANNELS_ID
+                }),
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = adminRole.RoleId,
+                    PermissionId = PermissionsId.CAN_MANAGE_ROLES_ID
+                }),
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = adminRole.RoleId,
+                    PermissionId = PermissionsId.CAN_CREATE_INVITES_ID
+                }),
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = adminRole.RoleId,
+                    PermissionId = PermissionsId.CAN_BAN_MEMBERS_ID
+                }),
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = adminRole.RoleId,
+                    PermissionId = PermissionsId.CAN_TIME_OUT_MEMBERS_ID
+                }),
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = adminRole.RoleId,
+                    PermissionId = PermissionsId.CAN_SEND_MESSAGES_ID
+                }),
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = adminRole.RoleId,
+                    PermissionId = PermissionsId.CAN_MANAGE_MESSAGES_ID
+                }),
+            };
+            var memberPermissions = new List<RolePermission>()
+            {
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = memberRole.RoleId,
+                    PermissionId = PermissionsId.CAN_CREATE_INVITES_ID
+                }),
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = memberRole.RoleId,
+                    PermissionId = PermissionsId.CAN_SEND_MESSAGES_ID
+                }),
+                _mapper.Map<RolePermission>(new RolePermissionDTO
+                {
+                    RoleId = memberRole.RoleId,
+                    PermissionId = PermissionsId.CAN_MANAGE_MESSAGES_ID
+                }),
+            };
+            _unitOfWork.RolePermissions.InsertRange(adminPermissions);
+            _unitOfWork.RolePermissions.InsertRange(memberPermissions);
             // Add role with user
             var userRoles = new List<UserRole>
             {
                 _mapper.Map<UserRole>(new UserRoleDTO
                 {
                     UserId = model.UserCreated,
-                    RoleId = (int)RoleSeedEnum.MEMBER_ROLE_ID
+                    RoleId = adminRole.RoleId
                 }),
                 _mapper.Map<UserRole>(new UserRoleDTO
                 {
                     UserId = model.UserCreated,
-                    RoleId = (int)RoleSeedEnum.MODERATOR_ROLE_ID,
+                    RoleId = memberRole.RoleId
                 })
             };
             _unitOfWork.UserRoles.InsertRange(userRoles);
@@ -100,7 +164,6 @@ namespace Presentations.Controllers
             return Ok("Create group chat success!");
         }
         [HttpPut("Update")]
-        //[Authorize(Roles = "Moderator")]
         public async Task<IActionResult> UpdateGroupChat(UpdateGroupChatDTO model)
         {
             if (!ModelState.IsValid)
@@ -138,8 +201,17 @@ namespace Presentations.Controllers
             return Ok("Delete group chat success!");
         }
         [HttpPost("Invite")]
-        public async Task<IActionResult> Invite(UserGroupChat model)
+        public async Task<IActionResult> Invite(UserGroupChatDTO model)
         {
+            var memberRole = _unitOfWork.Roles.GetAll().FirstOrDefault(x => x.RoleName == RolesSeed.MEMBER_ROLE && x.GroupChatId == model.GroupChatId);
+            var userRoleDto = new UserRoleDTO
+            {
+                UserId = model.UserId,
+                RoleId = memberRole.RoleId
+            };
+            var userRole = _mapper.Map<UserRole>(userRoleDto);
+            _unitOfWork.UserRoles.Insert(userRole);
+            _unitOfWork.Save();
             return NoContent();
         }
 

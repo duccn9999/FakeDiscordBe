@@ -22,18 +22,13 @@ namespace Presentations.Controllers
             _mapper = mapper;
         }
         // GET: api/<UsersController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        [HttpGet("GetUsersInGroupChat/{groupChatId}")]
+        public async Task<IActionResult> GetUsersInGroupChat(int groupChatId)
         {
-            return new string[] { "value1", "value2" };
+            var result = _unitOfWork.Users.GetUsersInGroupChat(groupChatId);
+            return Ok(result);
         }
 
-        // GET api/<UsersController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
         // PUT api/<UsersController>/5
         [HttpPut("UpdateProfile/{id}")]
         public async Task<IActionResult> Put(UpdateUserDTO model)

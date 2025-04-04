@@ -1,6 +1,7 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.RolePermissions;
 using DataAccesses.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,16 @@ namespace BusinessLogics.RepositoriesImpl
             
         }
 
+        public IEnumerable<string> GetPermissionNameByRoleIds(List<int> roleIds)
+        {
+            var result = from rp in _context.RolePermissions
+                         join p in _context.Permissions
+                         on rp.PermissionId equals p.PermissionId
+                         where roleIds.Contains(rp.RoleId)
+                         select rp;
+                return result.Select(x => x.Permission.Value).AsEnumerable();
+        }
+
         public IEnumerable<RolePermissionDTO> GetRolePermissionsByRoleId(int roleId)
         {
             var result = from rp in _context.RolePermissions
@@ -28,6 +39,18 @@ namespace BusinessLogics.RepositoriesImpl
                          };
             return result.AsEnumerable();
         }
+
+        public bool HasPermission(List<int> roles, string permission)
+        {
+            // Get all permissions assigned to the provided roles
+            var permissionsOfRoles = _context.RolePermissions
+                .Where(rp => roles.Contains(rp.RoleId))
+                .Select(rp => rp.Permission.Value) // Assuming there's a navigation property to Permission
+                .ToList(); // Materialize the query
+            // Check if the required permission exists in the list
+            return permissionsOfRoles.Contains(permission);
+        }
+
 
         public void ToggleRolePermission(RolePermission model)
         {

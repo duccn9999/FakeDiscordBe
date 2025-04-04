@@ -18,7 +18,6 @@ namespace DataAccesses.Models
         public int UserCreated { get; set; }
         public int? UserModified { get; set; }
         public IEnumerable<Channel>? Channels { get; set; }
-        public IEnumerable<GroupChatRole>? GroupChatRoles { get; set; }
-        public IEnumerable<UserGroupChat>? UserGroupChats { get; set; }
+        public IEnumerable<Role>? Roles { get; set; }
     }
 }

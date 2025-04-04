@@ -14,7 +14,7 @@ namespace BusinessLogics.RepositoriesImpl
                          select new PermissionDTO
                          {
                              PermissionId = p.PermissionId,
-                             Name = p.Name,
+                             Name = p.DisplayName,
                              Description = p.Description,
                          };
             return result.AsEnumerable();

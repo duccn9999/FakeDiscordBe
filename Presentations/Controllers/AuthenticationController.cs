@@ -16,6 +16,7 @@ namespace Presentations.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IHubContext<UserHub> _fakeDiscordHub;
+        private const string DEFAULT_AVATAR = "https://res.cloudinary.com/dywexvvcy/image/upload/v1743734472/default-avatar-icon-of-social-media-user-vector_nu0k8l.jpg";
         public AuthenticationController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub)
         {
             _unitOfWork = unitOfWork;
@@ -51,6 +52,10 @@ namespace Presentations.Controllers
             }
             _unitOfWork.BeginTransaction();
             var user = _mapper.Map<User>(model);
+            if(user.Avatar == null)
+            {
+                user.Avatar = DEFAULT_AVATAR;
+            }
             await _unitOfWork.Authentication.SignUp(user);
             _unitOfWork.Commit();
             return Ok(new { model.UserName, model.Password });

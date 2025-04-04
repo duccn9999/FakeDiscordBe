@@ -14,6 +14,11 @@ using Microsoft.AspNetCore.SignalR;
 using CloudinaryDotNet;
 using dotenv.net;
 using DataAccesses.Utils;
+using Presentations.AuthorizationHandler;
+using Microsoft.AspNetCore.Authorization;
+using Presentations.AuthorizationHandler.RequiredPermission;
+using Presentations.AuthorizationHandler.AllowedIds;
+
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
@@ -85,6 +90,32 @@ builder.Services.AddAuthentication(options =>
         }
     };
 });
+builder.Services.AddAuthorization(options =>
+{
+    var permissions = new[]
+    {
+        Permissions.CAN_MANAGE_CHANNELS,
+        Permissions.CAN_MANAGE_ROLES,
+        Permissions.CAN_CREATE_INVITES,
+        Permissions.CAN_SEND_MESSAGES,
+        Permissions.CAN_MANAGE_MESSAGES,
+        Permissions.CAN_EDIT_GROUPCHAT,
+        Permissions.CAN_MANAGE_MEMBERS,
+    };
+
+    foreach (var permission in permissions)
+    {
+        options.AddPolicy(permission, policy =>
+            policy.Requirements.Add(new RequiredPermissionRequirement(permission)));
+    }
+
+    options.AddPolicy("VIEW_MESSAGES", policy =>
+    policy.Requirements.Add(new PrivateChannelsAllowersRequirement()));
+});
+
+builder.Services.AddTransient<IAuthorizationHandler, RequiredPermissionHandler>();
+builder.Services.AddTransient<IAuthorizationHandler, PrivateChannelsAllowersHandler>();
+builder.Services.AddHttpContextAccessor();
 // CORS
 builder.Services.AddCors(options =>
 {

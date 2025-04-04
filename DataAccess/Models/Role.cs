@@ -15,8 +15,10 @@ namespace DataAccesses.Models
         public DateTime? DateModified { get; set; }
         public int UserCreated { get; set; }
         public int? UserModified { get; set; }
+        [ForeignKey("GroupChatId")]
+        public int GroupChatId { get; set; }
+        public GroupChat? GroupChat { get; set; }
         public IEnumerable<UserRole>? UserRoles { get; set; }
-        public IEnumerable<GroupChatRole>? GroupChatRoles { get; set; }
         public IEnumerable<RolePermission>? RolePermissions { get; set; }
     }
 }

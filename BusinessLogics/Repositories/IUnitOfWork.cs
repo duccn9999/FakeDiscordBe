@@ -15,11 +15,11 @@ namespace BusinessLogics.Repositories
         IChannelRepository Channels { get; }
         IMessageRepository Messages { get; }
         IRoleRepository Roles { get; }
-        IGroupChatRoleRepository GroupChatRoles { get; }
         IUserRoleRepository UserRoles { get; }
         IPermissionRepository Permissions { get; }
         IRolePermissionRepository RolePermissions { get; }
-        IUserGroupChatRepository UserGroupChats { get; }
+        IAllowedRolesRepository AllowedRoles { get; }
+        IAllowedUsersRepository AllowedUsers { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();
