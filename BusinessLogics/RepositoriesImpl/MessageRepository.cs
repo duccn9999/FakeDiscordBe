@@ -23,7 +23,7 @@ namespace BusinessLogics.RepositoriesImpl
                              Avatar = u.Avatar,
                              ReplyTo = m.ReplyTo,
                              Content = m.Content,
-                             DateCreated = m.DateCreated,
+                             DateCreated = m.DateCreated.ToString("yyyy-MM-dd HH:mm"),
                              DateModified = m.DateModified,
                              ChannelId = m.ChannelId,
                          };
@@ -46,7 +46,7 @@ namespace BusinessLogics.RepositoriesImpl
                              Avatar = u.Avatar,
                              ReplyTo = m.ReplyTo,
                              Content = m.Content,
-                             DateCreated = m.DateCreated,
+                             DateCreated = m.DateCreated.ToString("yyyy-MM-dd HH:mm"),
                              DateModified = m.DateModified,
                              ChannelId = m.ChannelId,
                          };

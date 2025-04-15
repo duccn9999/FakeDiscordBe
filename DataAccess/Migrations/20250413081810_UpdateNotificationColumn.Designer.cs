@@ -4,6 +4,7 @@ using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    partial class FakeDiscordContextModelSnapshot : ModelSnapshot
+    [Migration("20250413081810_UpdateNotificationColumn")]
+    partial class UpdateNotificationColumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -216,11 +219,11 @@ namespace DataAccesses.Migrations
 
             modelBuilder.Entity("DataAccesses.Models.PrivateMessage", b =>
                 {
-                    b.Property<int>("MessageId")
+                    b.Property<int>("PrivateMsgId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PrivateMsgId"));
 
                     b.Property<string>("Content")
                         .IsRequired()
@@ -232,13 +235,13 @@ namespace DataAccesses.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Receiver")
+                    b.Property<int?>("ReplyTo")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("MessageId");
+                    b.HasKey("PrivateMsgId");
 
                     b.HasIndex("UserId");
 
@@ -439,13 +442,13 @@ namespace DataAccesses.Migrations
 
             modelBuilder.Entity("DataAccesses.Models.PrivateMessage", b =>
                 {
-                    b.HasOne("DataAccesses.Models.User", "Sender")
+                    b.HasOne("DataAccesses.Models.User", "UserCreated")
                         .WithMany("PrivateMessages")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Sender");
+                    b.Navigation("UserCreated");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Role", b =>

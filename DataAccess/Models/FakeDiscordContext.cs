@@ -20,6 +20,7 @@ namespace DataAccesses.Models
         public DbSet<AllowedRole> AllowedRoles { get; set; }
         public DbSet<AllowedUser> AllowedUsers { get; set; }
         public DbSet<UserFriend> UserFriends { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserRole>()

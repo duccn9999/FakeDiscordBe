@@ -6,7 +6,8 @@ namespace Presentations.Hubs
     {
         public Dictionary<string, List<string>> connectedUsers { get; set; } = new();
         public Dictionary<int, List<string>> usersByChannel { get; set; } = new();
-        public List<string> GetConnectedUsers(string groupChatId, string username)
+        public Dictionary<int, List<int>> onlineFriends { get; set; } = new();
+        public async Task GetConnectedUsers(string groupChatId, string username)
         {
             lock (connectedUsers)
             {
@@ -20,7 +21,7 @@ namespace Presentations.Hubs
                     connectedUsers[groupChatId].Add(username);
                 }
             }
-            return connectedUsers[groupChatId];
+            await Task.CompletedTask;
         }
 
         public async Task GetUsersByChannel(int channelId, string username)
@@ -50,6 +51,34 @@ namespace Presentations.Hubs
                 if (usersByChannel[channelId].Contains(username))
                 {
                     usersByChannel[channelId].Remove(username);
+                }
+            }
+            await Task.CompletedTask;
+        }
+
+        public async Task TrackOnlineFriend(int userId, int friendId)
+        {
+            lock (onlineFriends)
+            {
+                if (!onlineFriends.ContainsKey(userId))
+                {
+                    onlineFriends[userId] = new List<int>();
+                }
+                if (!onlineFriends[userId].Contains(friendId))
+                {
+                    onlineFriends[userId].Add(friendId);
+                }
+            }
+            await Task.CompletedTask;
+        }
+
+        public async Task TrackOffLineFriend(int userId, int friendId)
+        {
+            lock (onlineFriends)
+            {
+                if (!onlineFriends[userId].Contains(friendId))
+                {
+                    onlineFriends[userId].Remove(friendId);
                 }
             }
             await Task.CompletedTask;

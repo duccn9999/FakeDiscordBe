@@ -22,13 +22,13 @@ namespace BusinessLogics.RepositoriesImpl
             return user != null;
         }
 
-        public async Task<bool> CheckUserNameDuplicatedAsync(string userName)
+        public async Task<bool> CheckUsernameDuplicatedAsync(string userName)
         {
             var user = await table.FirstOrDefaultAsync(x => x.UserName == userName);
             return user != null;
         }
 
-        public User GetByUserName(string userName)
+        public User GetByUsername(string userName)
         {
             var user = table.FirstOrDefault(x => x.UserName == userName);
             return user;

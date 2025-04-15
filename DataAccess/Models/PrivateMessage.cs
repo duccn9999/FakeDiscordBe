@@ -9,12 +9,12 @@ namespace DataAccesses.Models
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int PrivateMsgId { get; set; }
+        public int MessageId { get; set; }
 
         private int UserId { get; set; }
         [ForeignKey("UserId")]
-        public User UserCreated { get; set; }
-        public int? ReplyTo { get; set; }
+        public User Sender { get; set; }
+        public int Receiver { get; set; }
         public string Content { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime? DateModified { get; set; }

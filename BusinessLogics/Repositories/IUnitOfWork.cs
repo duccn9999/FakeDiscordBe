@@ -20,6 +20,8 @@ namespace BusinessLogics.Repositories
         IRolePermissionRepository RolePermissions { get; }
         IAllowedRolesRepository AllowedRoles { get; }
         IAllowedUsersRepository AllowedUsers { get; }
+        IUserFriendRepository UserFriends { get; }
+        INotificationRepository Notifications { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();

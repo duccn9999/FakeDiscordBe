@@ -25,7 +25,7 @@ namespace BusinessLogics.RepositoriesImpl
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
-            var user = _users.GetByUserName(model.UserName);
+            var user = _users.GetByUsername(model.UserName);
             var claims = new List<Claim> {
                 new("userId", user.UserId.ToString()),
                 new("avatar", user.Avatar != null ? user.Avatar : "null"),
@@ -56,7 +56,7 @@ namespace BusinessLogics.RepositoriesImpl
 
         public async Task SignUp(User model)
         {
-            var UserFlag = await _users.CheckUserNameDuplicatedAsync(model.UserName);
+            var UserFlag = await _users.CheckUsernameDuplicatedAsync(model.UserName);
             var EmailFlag = await _users.CheckEmailDuplicatedAsync(model.Email);
             if (!UserFlag || !EmailFlag)
             {

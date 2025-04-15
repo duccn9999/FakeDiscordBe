@@ -54,7 +54,7 @@ namespace Presentations.Controllers
                 Avatar = user.Avatar,
                 ReplyTo = message.ReplyTo,
                 Content = message.Content,
-                DateCreated = message.DateCreated,
+                DateCreated = message.DateCreated.ToString("yyyy-MM-dd HH:mm"),
                 DateModified = message.DateModified,
                 ChannelId = message.ChannelId,
             });
@@ -77,7 +77,7 @@ namespace Presentations.Controllers
                 Avatar = user.Avatar,
                 ReplyTo = message.ReplyTo,
                 Content = message.Content,
-                DateCreated = message.DateCreated,
+                DateCreated = message.DateCreated.ToString("yyyy-MM-dd HH:mm"),
                 DateModified = message.DateModified,
                 ChannelId = message.ChannelId,
             });
@@ -103,7 +103,7 @@ namespace Presentations.Controllers
                 Avatar = user.Avatar,
                 ReplyTo = message.ReplyTo,
                 Content = message.Content,
-                DateCreated = message.DateCreated,
+                DateCreated = message.DateCreated.ToString("yyyy-MM-dd HH:mm"),
                 DateModified = message.DateModified,
                 ChannelId = message.ChannelId,
             });

@@ -13,7 +13,7 @@ namespace DataAccesses.DTOs.Messages
         public string Avatar { get; set; }
         public int? ReplyTo { get; set; }
         public string Content { get; set; }
-        public DateTime DateCreated { get; set; } = DateTime.Now;
+        public string DateCreated { get; set; }
         public DateTime? DateModified { get; set; }
         public int ChannelId { get; set; }
     }

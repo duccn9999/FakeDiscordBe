@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    [Migration("20250404143629_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250412120836_UpdateNotification")]
+    partial class UpdateNotification
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -157,6 +157,40 @@ namespace DataAccesses.Migrations
                     b.HasIndex("ChannelId");
 
                     b.ToTable("Message");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.Notification", b =>
+                {
+                    b.Property<int>("NotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NotificationId"));
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("Type")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("UserId1")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId2")
+                        .HasColumnType("int");
+
+                    b.HasKey("NotificationId");
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("Notification");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Permission", b =>
@@ -393,6 +427,17 @@ namespace DataAccesses.Migrations
                         .IsRequired();
 
                     b.Navigation("Channel");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.Notification", b =>
+                {
+                    b.HasOne("DataAccesses.Models.User", "User1")
+                        .WithMany()
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User1");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.PrivateMessage", b =>

@@ -28,7 +28,7 @@ namespace BusinessLogics.RepositoriesImpl
         {
             var result = (
                 from c in _context.Channels
-                where c.GroupChatId == 6 && c.IsPrivate == false
+                where c.GroupChatId == groupChatId && c.IsPrivate == false
                 select new GetChannelDTO
                 {
                     ChannelId = c.ChannelId,
