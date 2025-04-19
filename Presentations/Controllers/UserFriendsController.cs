@@ -55,6 +55,7 @@ namespace Presentations.Controllers
                 RequestDate = DateTime.UtcNow
             };
             _unitOfWork.UserFriends.Insert(userFriend);
+            _unitOfWork.Save();
             /* send notification */
             var notificationDto = new CreateNotificationDTO
             {
@@ -89,6 +90,7 @@ namespace Presentations.Controllers
             {
                 return NotFound();
             }
+            _unitOfWork.BeginTransaction();
             userFriend.Status = model.Status;
             _unitOfWork.UserFriends.Update(userFriend);
             var sender = _unitOfWork.Users.GetById(model.UserId1);
@@ -103,7 +105,6 @@ namespace Presentations.Controllers
             };
             var notification = _mapper.Map<Notification>(notificationDto);
             _unitOfWork.Notifications.Insert(notification);
-            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(new GetNotificationDTO
             {
@@ -126,6 +127,7 @@ namespace Presentations.Controllers
             {
                 return NotFound();
             }
+            _unitOfWork.BeginTransaction();
             var sender = _unitOfWork.Users.GetById(userId1);
             _unitOfWork.UserFriends.Delete(userFriend.Id);
             /* send notification */
@@ -138,7 +140,6 @@ namespace Presentations.Controllers
             };
             var notification = _mapper.Map<Notification>(notificationDto);
             _unitOfWork.Notifications.Insert(notification);
-            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(new GetNotificationDTO
             {

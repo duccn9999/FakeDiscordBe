@@ -48,12 +48,14 @@ namespace Presentations.Controllers
             {
                 return NotFound();
             }
+            _unitOfWork.BeginTransaction();
             notification.IsRead = model.IsRead;
             // two users has become friend
             var sender = _unitOfWork.Users.GetById(notification.UserId1);
             notification.Message = $"{sender.UserName} and you has become friend";
             notification.Type = false;
             _unitOfWork.Notifications.Update(notification);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(new GetNotificationDTO
             {
@@ -75,8 +77,10 @@ namespace Presentations.Controllers
             {
                 return NotFound();
             }
+            _unitOfWork.BeginTransaction();
             notification.IsRead = true;
             _unitOfWork.Notifications.Update(notification);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(new GetNotificationDTO
             {

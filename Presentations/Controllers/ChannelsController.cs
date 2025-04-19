@@ -43,6 +43,7 @@ namespace Presentations.Controllers
             _unitOfWork.BeginTransaction();
             var Channel = _mapper.Map<Channel>(model);
             _unitOfWork.Channels.Insert(Channel);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Created("CreateChannel", new GetChannelDTO { ChannelId = Channel.ChannelId, ChannelName = Channel.ChannelName });
         }
@@ -60,6 +61,7 @@ namespace Presentations.Controllers
             var channel = await _unitOfWork.Channels.GetByIdAsync(model.ChannelId);
             _mapper.Map(model, channel);
             _unitOfWork.Channels.Update(channel);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(new GetChannelDTO
             {
@@ -79,6 +81,7 @@ namespace Presentations.Controllers
             }
             _unitOfWork.BeginTransaction();
             _unitOfWork.Channels.Delete(channelId);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return NoContent();
         }
@@ -99,7 +102,6 @@ namespace Presentations.Controllers
             };
             var channel = _mapper.Map<Channel>(channelDto);
             _unitOfWork.Channels.Insert(channel);
-            _unitOfWork.Save();
             var rolesInChannelDto = model.Roles;
             var usersInChannelDto = model.Users;
             var rolesInChannel = rolesInChannelDto
@@ -116,6 +118,7 @@ namespace Presentations.Controllers
             }).ToList();
             await _unitOfWork.AllowedRoles.InsertRangeAsync(rolesInChannel);
             await _unitOfWork.AllowedUsers.InsertRangeAsync(usersInChannel);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Created("CreateChannel", new GetChannelDTO { ChannelId = channel.ChannelId, ChannelName = channel.ChannelName });
         }

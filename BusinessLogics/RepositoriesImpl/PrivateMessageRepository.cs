@@ -1,6 +1,9 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
+using DataAccesses.DTOs.PrivateMessageImages;
+using DataAccesses.DTOs.PrivateMessages;
 using DataAccesses.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessLogics.RepositoriesImpl
 {
@@ -9,14 +12,29 @@ namespace BusinessLogics.RepositoriesImpl
         private readonly IUnitOfWork _unitOfWork;
         public PrivateMessageRepository(FakeDiscordContext context) : base(context) { }
 
-        public IEnumerable<PrivateMessage> GetPrivateMsgesPagination(int page, int? items, int userId, int receiver)
+        public IEnumerable<GetPrivateMessageDTO> GetPrivateMsgesPagination(int page, int? items, int userId, int receiver)
         {
-            var query = GetPrivateMsgesPaginationByUserAndReceiver(userId, receiver);
-
-            // Pagination
-            query = query.Skip((page - 1) * items.Value).Take(items.Value);
-
-            return query.AsEnumerable();
+            var result = from privateMessage in _context.PrivateMsgs
+                         join user in _context.Users on privateMessage.UserId equals user.UserId
+                         where ( privateMessage.UserId == userId && privateMessage.Receiver == receiver ) || 
+                         (privateMessage.UserId == receiver && privateMessage.Receiver == userId)
+                         select new GetPrivateMessageDTO
+                         {
+                             MessageId = privateMessage.MessageId,
+                             UserId = privateMessage.UserId,
+                             UserName = user.UserName,
+                             Avatar = user.Avatar,
+                             Receiver = privateMessage.Receiver,
+                             Content = privateMessage.Content,
+                             Images = privateMessage.Images.Select(i => new GetPrivateMessageImageDTO
+                             {
+                                 ImageId = i.ImageId,
+                                 ImageUrl = i.ImageUrl,
+                                 MessageId = i.MessageId,
+                             }).ToList(),
+                             DateCreated = privateMessage.DateCreated.ToString("yyyy-MM-dd HH:mm")
+                         };
+            return result.AsEnumerable();
         }
 
         public IEnumerable<PrivateMessage> GetPrivateMsgesPaginationInSpecificTime(int page, int size, string? keyword, DateTime? startDate, DateTime? endDate, int userId, int receiver)

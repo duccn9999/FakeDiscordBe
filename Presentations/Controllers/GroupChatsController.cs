@@ -50,7 +50,7 @@ namespace Presentations.Controllers
         }
         [HttpPost("Create")]
         [AllowAnonymous]
-        public async Task<IActionResult> CreateGroupChat(CreateGroupChatDTO model)
+        public async Task<IActionResult> CreateGroupChat([FromForm] CreateGroupChatDTO model)
         {
             if (!ModelState.IsValid)
             {
@@ -59,10 +59,10 @@ namespace Presentations.Controllers
             _unitOfWork.BeginTransaction();
             // upload image to cloudinary
             var uploadedCoverImage = await _cloudinaryService.UploadImage(model.CoverImage);
-            model.CoverImage = uploadedCoverImage;
-            var GroupChat = _mapper.Map<GroupChat>(model);
-            GroupChat.InviteCode = _randomStringGenerator.GenerateUniqueRandomString(7);
-            _unitOfWork.GroupChats.Insert(GroupChat);
+            var groupChat = _mapper.Map<GroupChat>(model);
+            groupChat.CoverImage = uploadedCoverImage;
+            groupChat.InviteCode = _randomStringGenerator.GenerateUniqueRandomString(7);
+            _unitOfWork.GroupChats.Insert(groupChat);
             _unitOfWork.Save();
             // Add role in group chat
             var roles = new List<Role>()
@@ -72,21 +72,21 @@ namespace Presentations.Controllers
                 RoleName = RolesSeed.ADMINISTRATOR_ROLE,
                 Color = "#ffffff",
                 UserCreated = model.UserCreated,
-                GroupChatId = GroupChat.GroupChatId
+                GroupChatId = groupChat.GroupChatId
                 }),
                 _mapper.Map<Role>(new CreateRoleDTO
                 {
                 RoleName = RolesSeed.MEMBER_ROLE,
                 Color = "#ffffff",
                 UserCreated = model.UserCreated,
-                GroupChatId = GroupChat.GroupChatId
+                GroupChatId = groupChat.GroupChatId
                 })
             };
             _unitOfWork.Roles.InsertRange(roles);
             _unitOfWork.Save();
             // Add permissions with role
-            var adminRole = _unitOfWork.Roles.GetAll().FirstOrDefault(x => x.RoleName == RolesSeed.ADMINISTRATOR_ROLE && x.GroupChatId == GroupChat.GroupChatId);
-            var memberRole = _unitOfWork.Roles.GetAll().FirstOrDefault(x => x.RoleName == RolesSeed.MEMBER_ROLE && x.GroupChatId == GroupChat.GroupChatId);
+            var adminRole = _unitOfWork.Roles.GetAll().FirstOrDefault(x => x.RoleName == RolesSeed.ADMINISTRATOR_ROLE && x.GroupChatId == groupChat.GroupChatId);
+            var memberRole = _unitOfWork.Roles.GetAll().FirstOrDefault(x => x.RoleName == RolesSeed.MEMBER_ROLE && x.GroupChatId == groupChat.GroupChatId);
             var adminPermissions = new List<RolePermission>()
             {
                 _mapper.Map<RolePermission>(new RolePermissionDTO
@@ -160,11 +160,12 @@ namespace Presentations.Controllers
                 })
             };
             _unitOfWork.UserRoles.InsertRange(userRoles);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok("Create group chat success!");
         }
         [HttpPut("Update")]
-        public async Task<IActionResult> UpdateGroupChat(UpdateGroupChatDTO model)
+        public async Task<IActionResult> UpdateGroupChat([FromForm] UpdateGroupChatDTO model)
         {
             if (!ModelState.IsValid)
             {
@@ -172,17 +173,21 @@ namespace Presentations.Controllers
             }
             _unitOfWork.BeginTransaction();
             // upload image to cloudinary
-            var uploadedCoverImage = await _cloudinaryService.UploadImage(model.CoverImage);
-            model.CoverImage = uploadedCoverImage;
-            var GroupChat = _mapper.Map<GroupChat>(model);
-            _unitOfWork.GroupChats.Update(GroupChat);
+            var groupChat = _unitOfWork.GroupChats.GetById(model.GroupChatId);
+            if (model.CoverImage != null)
+            {
+                var uploadedCoverImage = await _cloudinaryService.UploadImage(model.CoverImage);
+                groupChat.CoverImage = uploadedCoverImage;
+            }
+            _mapper.Map(model, groupChat);
+            _unitOfWork.GroupChats.Update(groupChat);
             _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(new GetGroupChatDTO
             {
-                GroupChatId = GroupChat.GroupChatId,
-                CoverImage = GroupChat.CoverImage,
-                Name = GroupChat.Name
+                GroupChatId = groupChat.GroupChatId,
+                CoverImage = groupChat.CoverImage,
+                Name = groupChat.Name
             });
         }
         [HttpDelete("Delete/{id}")]
@@ -197,12 +202,18 @@ namespace Presentations.Controllers
             _unitOfWork.GroupChats.Delete(id);
             var userRoles = _unitOfWork.UserRoles.GetUserRolesByUserId(groupChat.UserCreated);
             _unitOfWork.UserRoles.DeleteRange(userRoles);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok("Delete group chat success!");
         }
         [HttpPost("Invite")]
         public async Task<IActionResult> Invite(UserGroupChatDTO model)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+            _unitOfWork.BeginTransaction();
             var memberRole = _unitOfWork.Roles.GetAll().FirstOrDefault(x => x.RoleName == RolesSeed.MEMBER_ROLE && x.GroupChatId == model.GroupChatId);
             var userRoleDto = new UserRoleDTO
             {
@@ -212,6 +223,7 @@ namespace Presentations.Controllers
             var userRole = _mapper.Map<UserRole>(userRoleDto);
             _unitOfWork.UserRoles.Insert(userRole);
             _unitOfWork.Save();
+            _unitOfWork.Commit();
             return NoContent();
         }
 

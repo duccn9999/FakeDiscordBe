@@ -1,17 +1,13 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 
 namespace BusinessLogics.Repositories
 {
     public interface ICloudinaryService
     {
-        public Task<string> UploadImage(string img);
+        public Task<string> UploadImage(IFormFile img);
         public Task UpdateImage(string img);
-        public Task DeleteImage(string img);
+        public Task<DeletionResult> DeleteImage(string publicId);
         public string GetImagePublicId(string img);
     }
 }

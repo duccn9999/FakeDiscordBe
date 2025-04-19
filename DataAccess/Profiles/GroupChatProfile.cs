@@ -1,12 +1,6 @@
 ﻿using AutoMapper;
 using DataAccesses.DTOs.GroupChats;
-using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DataAccesses.Profiles
 {
@@ -14,8 +8,9 @@ namespace DataAccesses.Profiles
     {
         public GroupChatProfile()
         {
-            CreateMap<CreateGroupChatDTO, GroupChat>();
-            CreateMap<UpdateGroupChatDTO, GroupChat>();
+            CreateMap<CreateGroupChatDTO, GroupChat>().ForMember(dest => dest.CoverImage, opt => opt.Ignore());
+            CreateMap<UpdateGroupChatDTO, GroupChat>().ForMember(dest => dest.CoverImage, opt => opt.Ignore())
+                .ForAllMembers(o => o.Condition((src, dest, value) => value != null));
             CreateMap<GroupChat, GetGroupChatDTO>();
         }
 

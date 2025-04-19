@@ -19,7 +19,7 @@ namespace Presentations.Hubs
         public async Task OnConnected(string username, GetChannelDTO model)
         {
             var channel = _unitOfWork.Channels.GetById(model.ChannelId);
-            var groupChat = _unitOfWork.GroupChats.GetAll().Where(x => x.GroupChatId == channel.GroupChatId).FirstOrDefault();
+            var groupChat = _unitOfWork.GroupChats.GetAll().FirstOrDefault(x => x.GroupChatId == channel.GroupChatId);
             // add to channel ( assuming that is a subset of a group )
             await _userTracker.GetUsersByChannel(model.ChannelId, username);
             await Clients.Caller.SendAsync("EnterChannel", username, model);

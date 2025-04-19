@@ -57,7 +57,6 @@ namespace Presentations.Controllers
             var role = _mapper.Map<Role>(model);
             _unitOfWork.Roles.Insert(role);
             _unitOfWork.Save();
-
             _unitOfWork.Commit();
             return Created("POST", model);
         }
@@ -74,6 +73,7 @@ namespace Presentations.Controllers
             var role = await _unitOfWork.Roles.GetByIdAsync(model.RoleId);
             _mapper.Map(model, role);
             _unitOfWork.Roles.Update(role);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(role);
         }
@@ -88,6 +88,7 @@ namespace Presentations.Controllers
             }
             _unitOfWork.BeginTransaction();
             _unitOfWork.Roles.Delete(roleId);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return NoContent();
         }

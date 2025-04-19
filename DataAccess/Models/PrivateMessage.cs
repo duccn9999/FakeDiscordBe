@@ -11,12 +11,13 @@ namespace DataAccesses.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int MessageId { get; set; }
 
-        private int UserId { get; set; }
+        public int UserId { get; set; }
         [ForeignKey("UserId")]
         public User Sender { get; set; }
         public int Receiver { get; set; }
-        public string Content { get; set; }
+        public string? Content { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime? DateModified { get; set; }
+        public IEnumerable<PrivateMessageImage>? Images { get; set; }
     }
 }

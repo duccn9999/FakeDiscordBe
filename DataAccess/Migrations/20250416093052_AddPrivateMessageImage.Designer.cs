@@ -4,6 +4,7 @@ using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    partial class FakeDiscordContextModelSnapshot : ModelSnapshot
+    [Migration("20250416093052_AddPrivateMessageImage")]
+    partial class AddPrivateMessageImage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -223,6 +226,7 @@ namespace DataAccesses.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageId"));
 
                     b.Property<string>("Content")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DateCreated")
@@ -252,11 +256,17 @@ namespace DataAccesses.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ImageId"));
 
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("ImageUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserCreated")
                         .HasColumnType("int");
 
                     b.HasKey("ImageId");
@@ -472,7 +482,7 @@ namespace DataAccesses.Migrations
             modelBuilder.Entity("DataAccesses.Models.PrivateMessageImage", b =>
                 {
                     b.HasOne("DataAccesses.Models.PrivateMessage", "PrivateMessage")
-                        .WithMany("Images")
+                        .WithMany()
                         .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -559,11 +569,6 @@ namespace DataAccesses.Migrations
             modelBuilder.Entity("DataAccesses.Models.Permission", b =>
                 {
                     b.Navigation("RolePermissions");
-                });
-
-            modelBuilder.Entity("DataAccesses.Models.PrivateMessage", b =>
-                {
-                    b.Navigation("Images");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Role", b =>

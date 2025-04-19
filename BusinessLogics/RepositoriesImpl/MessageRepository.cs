@@ -15,7 +15,7 @@ namespace BusinessLogics.RepositoriesImpl
                          on m.ChannelId equals c.ChannelId
                          join u in _context.Users
                          on m.UserCreated equals u.UserId
-                         where c.ChannelId == channelId orderby m.DateCreated descending
+                         where c.ChannelId == channelId orderby m.DateCreated ascending
                          select new GetMessageDTO
                          {
                              MessageId = m.MessageId,
@@ -38,7 +38,7 @@ namespace BusinessLogics.RepositoriesImpl
                          join u in _context.Users
                          on m.UserCreated equals u.UserId
                          where c.ChannelId == channelId
-                         orderby m.DateCreated descending
+                         orderby m.DateCreated ascending
                          select new GetMessageDTO
                          {
                              MessageId = m.MessageId,

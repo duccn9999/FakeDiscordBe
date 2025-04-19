@@ -38,6 +38,7 @@ namespace Presentations.Controllers
             });
             var userRoles = _mapper.Map<List<UserRole>>(userRoleDtos);
             _unitOfWork.UserRoles.InsertRange(userRoles);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return NoContent();
         }

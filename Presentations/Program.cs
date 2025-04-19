@@ -12,7 +12,6 @@ using Microsoft.OpenApi.Models;
 using Presentations.Middlewares;
 using Microsoft.AspNetCore.SignalR;
 using CloudinaryDotNet;
-using dotenv.net;
 using DataAccesses.Utils;
 using Presentations.AuthorizationHandler;
 using Microsoft.AspNetCore.Authorization;

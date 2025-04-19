@@ -1,9 +1,7 @@
 ﻿using BusinessLogics.Repositories;
 using CloudinaryDotNet.Actions;
 using CloudinaryDotNet;
-using dotenv.net;
-using Newtonsoft.Json.Linq;
-using System;
+using Microsoft.AspNetCore.Http;
 
 namespace BusinessLogics.RepositoriesImpl
 {
@@ -17,9 +15,14 @@ namespace BusinessLogics.RepositoriesImpl
             cloudinary.Api.Secure = true;
         }
 
-        public async Task DeleteImage(string img)
+        public async Task<DeletionResult> DeleteImage(string publicId)
         {
-            throw new NotImplementedException();
+            var deleteParams = new DeletionParams(publicId)
+            {
+                ResourceType = ResourceType.Image
+            };
+            var result = await cloudinary.DestroyAsync(deleteParams);
+            return result;
         }
 
         public async Task UpdateImage(string img)
@@ -32,17 +35,26 @@ namespace BusinessLogics.RepositoriesImpl
             var updateResult = cloudinary.UpdateResource(updateParams);
         }
 
-        public async Task<string> UploadImage(string img)
+        public async Task<string> UploadImage(IFormFile img)
         {
-            var uploadParams = new ImageUploadParams()
+            var uploadResult = new ImageUploadResult();
+            if (img.Length > 0)
             {
-                File = new FileDescription(@$"{img}"),
-                UseFilename = true,
-                UniqueFilename = false,
-                Overwrite = true
-            };
-            var uploadResult = cloudinary.Upload(uploadParams);
-            return uploadResult.SecureUrl.ToString();
+                using var stream = img.OpenReadStream();
+                var uploadParams = new ImageUploadParams()
+                {
+                    File = new FileDescription(img.FileName, stream),
+                    UseFilename = true,
+                    UniqueFilename = false,
+                    Overwrite = true
+                };
+                uploadResult = await cloudinary.UploadAsync(uploadParams);
+                return uploadResult.SecureUrl.ToString();
+            }
+            else
+            {
+                throw new Exception("Image is empty");
+            }
         }
 
         public string GetImagePublicId(string img)

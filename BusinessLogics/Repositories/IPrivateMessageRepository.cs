@@ -1,4 +1,5 @@
-﻿using DataAccesses.Models;
+﻿using DataAccesses.DTOs.PrivateMessages;
+using DataAccesses.Models;
 
 namespace BusinessLogics.Repositories
 {
@@ -6,6 +7,6 @@ namespace BusinessLogics.Repositories
     {
         public IEnumerable<PrivateMessage> GetPrivateMsgesPaginationByUserAndReceiver(int userId, int receiver);
         public IEnumerable<PrivateMessage> GetPrivateMsgesPaginationInSpecificTime(int page, int size, string? keyword, DateTime? startDate, DateTime? endDate, int userId, int receiver);
-        public IEnumerable<PrivateMessage> GetPrivateMsgesPagination(int page, int? items, int userId, int receiver);
+        public IEnumerable<GetPrivateMessageDTO> GetPrivateMsgesPagination(int page, int? items, int userId, int receiver);
     }
 }

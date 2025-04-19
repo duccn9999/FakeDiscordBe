@@ -28,6 +28,7 @@ namespace Presentations.Controllers
             _unitOfWork.BeginTransaction();
             var rolePermission = _mapper.Map<RolePermission>(model);
             _unitOfWork.RolePermissions.ToggleRolePermission(rolePermission);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return NoContent();
         }

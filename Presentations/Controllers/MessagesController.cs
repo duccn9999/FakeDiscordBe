@@ -45,6 +45,7 @@ namespace Presentations.Controllers
             var message = _mapper.Map<Message>(model);
             var insertProcess = _unitOfWork.Messages.InsertAsync(message);
             await insertProcess;
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             var user = await _unitOfWork.Users.GetByIdAsync(message.UserCreated);
             return Created("CreateMessage", new GetMessageDTO
@@ -68,6 +69,7 @@ namespace Presentations.Controllers
             var message = await _unitOfWork.Messages.GetByIdAsync(model.MessageId);
             _mapper.Map(model, message);
             _unitOfWork.Messages.Update(message);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             var user = await _unitOfWork.Users.GetByIdAsync(message.UserCreated);
             return Ok(new GetMessageDTO
@@ -94,6 +96,7 @@ namespace Presentations.Controllers
                 return NotFound();
             }
             _unitOfWork.Messages.Delete(id);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             var user = await _unitOfWork.Users.GetByIdAsync(message.UserCreated);
             return Ok(new GetMessageDTO

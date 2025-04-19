@@ -57,6 +57,7 @@ namespace Presentations.Controllers
                 user.Avatar = DEFAULT_AVATAR;
             }
             await _unitOfWork.Authentication.SignUp(user);
+            _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(new { model.UserName, model.Password });
         }
