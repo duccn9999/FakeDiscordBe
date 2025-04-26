@@ -11,17 +11,13 @@ using Presentations.Hubs;
 using Microsoft.OpenApi.Models;
 using Presentations.Middlewares;
 using Microsoft.AspNetCore.SignalR;
-using CloudinaryDotNet;
 using DataAccesses.Utils;
-using Presentations.AuthorizationHandler;
 using Microsoft.AspNetCore.Authorization;
 using Presentations.AuthorizationHandler.RequiredPermission;
 using Presentations.AuthorizationHandler.AllowedIds;
-
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
-
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true; // Handle case insensitivity

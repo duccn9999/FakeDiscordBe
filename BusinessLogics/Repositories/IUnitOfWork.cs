@@ -22,7 +22,9 @@ namespace BusinessLogics.Repositories
         IAllowedUsersRepository AllowedUsers { get; }
         IUserFriendRepository UserFriends { get; }
         INotificationRepository Notifications { get; }
-        IPrivateMessageImageRepository PrivateMessageImages { get; }
+        IPrivateMessageAttachmentRepository PrivateMessageAttachments { get; }
+        IMessageAttachmentRepository MessageAttachments { get; }
+
         void BeginTransaction();
         void Commit();
         void Rollback();

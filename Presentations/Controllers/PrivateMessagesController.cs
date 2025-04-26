@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
-using DataAccesses.DTOs.PrivateMessageImages;
+using DataAccesses.DTOs.PrivateMessageAttachments;
 using DataAccesses.DTOs.PrivateMessages;
 using DataAccesses.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -11,6 +12,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]/[action]")]
     [ApiController]
+    [Authorize]
     public class PrivateMessagesController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;
@@ -24,9 +26,9 @@ namespace Presentations.Controllers
         }
         // GET: api/<PrivateMessagesController>
         [HttpGet("{sender}/{receiver}")]
-        public async Task<IActionResult> GetPrivateMsgesPagination(int page, int items, int sender, int receiver)
+        public async Task<IActionResult> GetPrivateMsgesPagination(int sender, int receiver)
         {
-            var result = _unitOfWork.PrivateMsges.GetPrivateMsgesPagination(page, items, sender, receiver);
+            var result = _unitOfWork.PrivateMsges.GetPrivateMsges(sender, receiver);
             return Ok(result);
         }
 
@@ -46,84 +48,100 @@ namespace Presentations.Controllers
                 return BadRequest(ModelState);
             }
             _unitOfWork.BeginTransaction();
-            var privateMessage = _mapper.Map<PrivateMessage>(model);
+            var message = _mapper.Map<PrivateMessage>(model);
             /* Insert private message */
-            _unitOfWork.PrivateMsges.Insert(privateMessage);
+            _unitOfWork.PrivateMsges.Insert(message);
             _unitOfWork.Save();
             /* Insert images */
             var images = new List<string>();
-            if (model.Images != null && model.Images.Any())
+            if (model.Attachments != null && model.Attachments.Any())
             {
-                var privateMessageImagesDto = new List<CreatePrivateMessageImageDTO>();
-                foreach (var image in model.Images)
+                var attachmentDtos = new List<CreatePrivateMessageAttachmentDTO>();
+                foreach (var image in model.Attachments)
                 {
-                    var imageUrl = await _cloudinaryService.UploadImage(image);
-                    privateMessageImagesDto.Add(new CreatePrivateMessageImageDTO
+                    var attachment = await _cloudinaryService.UploadAttachment(image);
+                    attachmentDtos.Add(new CreatePrivateMessageAttachmentDTO
                     {
-                        MessageId = privateMessage.MessageId,
-                        ImageUrl = imageUrl
+                        MessageId = message.MessageId,
+                        Url = attachment.Url,
+                        PublicId = attachment.PublicId,
+                        ContentType = attachment.ResourceType,
+                        DisplayName = attachment.DisplayName,
+                        OriginalFilename = attachment.OriginalFilename,
+                        DownloadLink = _cloudinaryService.GetDownloadLink(attachment.Url, attachment.OriginalFilename, attachment.DisplayName),
                     });
                 }
-                if (privateMessageImagesDto.Any())
+                if (attachmentDtos.Any())
                 {
-                    var privateMessageImages = _mapper.Map<List<PrivateMessageImage>>(privateMessageImagesDto);
-                    _unitOfWork.PrivateMessageImages.InsertRange(privateMessageImages);
+                    var attachmentsModel = _mapper.Map<List<PrivateMessageAttachment>>(attachmentDtos);
+                    _unitOfWork.PrivateMessageAttachments.InsertRange(attachmentsModel);
                     _unitOfWork.Save();
                 }
             }
             _unitOfWork.Commit();
+            var attachments = _unitOfWork.PrivateMessageAttachments.GetAll().Where(attachment => attachment.MessageId == message.MessageId);
             return Ok(new GetPrivateMessageDTO
             {
-                MessageId = privateMessage.MessageId,
-                UserId = privateMessage.UserId,
-                Avatar = _unitOfWork.Users.GetById(privateMessage.UserId).Avatar,
-                UserName = _unitOfWork.Users.GetById(privateMessage.UserId).UserName,
-                Receiver = privateMessage.Receiver,
-                Content = privateMessage.Content,
-                Images = privateMessage.Images?.Select(i => new GetPrivateMessageImageDTO
+                MessageId = message.MessageId,
+                UserId = message.UserId,
+                Avatar = _unitOfWork.Users.GetById(message.UserId).Avatar,
+                UserName = _unitOfWork.Users.GetById(message.UserId).UserName,
+                Receiver = message.Receiver,
+                Content = message.Content,
+                Attachments = attachments?.Select(i => new GetPrivateMessageAttachmentDTO
                 {
-                    ImageId = i.ImageId,
-                    ImageUrl = i.ImageUrl,
+                    AttachmentId = i.AttachmentId,
+                    Url = i.Url,
                     MessageId = i.MessageId,
-                })?.ToList() ?? new List<GetPrivateMessageImageDTO>(),
-                DateCreated = privateMessage.DateCreated.ToString("yyyy-MM-dd HH:mm"),
+                    PublicId = i.PublicId,
+                    DisplayName = i.DisplayName,
+                    ContentType = i.ContentType,
+                    DownloadLink = i.DownloadLink,
+                })?.ToList() ?? new List<GetPrivateMessageAttachmentDTO>(),
+                DateCreated = message.DateCreated.ToString("yyyy-MM-dd HH:mm"),
             });
         }
 
         // PUT api/<PrivateMessagesController>/5
         [HttpPut]
-        public async Task<IActionResult> UpdatePrivateMessage([FromForm] UpdatePrivateMessageDTO model)
+        public async Task<IActionResult> UpdatePrivateMessage([FromBody] UpdatePrivateMessageDTO model)
         {
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
             _unitOfWork.BeginTransaction();
-            var privateMessage = _unitOfWork.PrivateMsges.GetById(model.PrivateMessageId);
-            if (privateMessage == null)
+            var message = _unitOfWork.PrivateMsges.GetById(model.PrivateMessageId);
+            if (message == null)
             {
                 return NotFound();
             }
             /* update message */
-            _mapper.Map(model, privateMessage);
-            _unitOfWork.PrivateMsges.Update(privateMessage);
+            _mapper.Map(model, message);
+            _unitOfWork.PrivateMsges.Update(message);
             _unitOfWork.Save();
             _unitOfWork.Commit();
+            var user = await _unitOfWork.Users.GetByIdAsync(message.UserId);
+            var attachments = _unitOfWork.PrivateMessageAttachments.GetAll().Where(image => image.MessageId == message.MessageId);
             return Ok(new GetPrivateMessageDTO
             {
-                MessageId = privateMessage.MessageId,
-                UserId = privateMessage.UserId,
-                Avatar = _unitOfWork.Users.GetById(privateMessage.UserId).Avatar,
-                UserName = _unitOfWork.Users.GetById(privateMessage.UserId).UserName,
-                Receiver = privateMessage.Receiver,
-                Content = privateMessage.Content,
-                Images = privateMessage.Images?.Select(i => new GetPrivateMessageImageDTO
+                MessageId = message.MessageId,
+                UserId = message.UserId,
+                Avatar = user.Avatar,
+                UserName = user.UserName,
+                Receiver = message.Receiver,
+                Content = message.Content,
+                Attachments = attachments?.Select(i => new GetPrivateMessageAttachmentDTO
                 {
-                    ImageId = i.ImageId,
-                    ImageUrl = i.ImageUrl,
+                    AttachmentId = i.AttachmentId,
+                    Url = i.Url,
                     MessageId = i.MessageId,
-                })?.ToList() ?? new List<GetPrivateMessageImageDTO>(),
-                DateCreated = privateMessage.DateCreated.ToString("yyyy-MM-dd HH:mm"),
+                    PublicId = i.PublicId,
+                    ContentType = i.ContentType,
+                    DisplayName = i.DisplayName,
+                    DownloadLink = i.DownloadLink,
+                })?.ToList() ?? new List<GetPrivateMessageAttachmentDTO>(),
+                DateCreated = message.DateCreated.ToString("yyyy-MM-dd HH:mm"),
             });
         }
 
@@ -136,25 +154,91 @@ namespace Presentations.Controllers
                 return BadRequest(ModelState);
             }
             _unitOfWork.BeginTransaction();
-            var privateMessage = _unitOfWork.PrivateMsges.GetById(messageId);
-            if (privateMessage == null)
+            var message = _unitOfWork.PrivateMsges.GetById(messageId);
+            var attachments = _unitOfWork.PrivateMessageAttachments.GetAll().Where(image => image.MessageId == messageId);
+            if (message == null)
             {
                 return NotFound();
             }
-            /* delete images */
-            if (privateMessage.Images != null && privateMessage.Images.Any())
+            /* delete attachments */
+            if (attachments != null && attachments.Any())
             {
-                foreach (var image in privateMessage.Images)
+                foreach (var attachment in attachments)
                 {
-                    var publicId = _cloudinaryService.GetImagePublicId(image.ImageUrl);
-                    await _cloudinaryService.DeleteImage(publicId);
-                    _unitOfWork.PrivateMessageImages.Delete(image.ImageId);
+                    await _cloudinaryService.DeleteAttachment(attachment.PublicId);
+                    _unitOfWork.PrivateMessageAttachments.Delete(attachment.AttachmentId);
                 }
             }
             _unitOfWork.PrivateMsges.Delete(messageId);
             _unitOfWork.Save();
             _unitOfWork.Commit();
-            return NoContent();
+            var user = await _unitOfWork.Users.GetByIdAsync(message.UserId);
+            return Ok(new GetPrivateMessageDTO
+            {
+                MessageId = message.MessageId,
+                UserId = message.UserId,
+                Avatar = user.Avatar,
+                UserName = user.UserName,
+                Receiver = message.Receiver,
+                Content = message.Content,
+                Attachments = attachments?.Select(i => new GetPrivateMessageAttachmentDTO
+                {
+                    AttachmentId = i.AttachmentId,
+                    Url = i.Url,
+                    MessageId = i.MessageId,
+                    ContentType = i.ContentType,
+                    PublicId = i.PublicId,
+                    DisplayName = i.DisplayName,
+                    DownloadLink = i.DownloadLink
+                })?.ToList() ?? new List<GetPrivateMessageAttachmentDTO>(),
+                DateCreated = message.DateCreated.ToString("yyyy-MM-dd HH:mm"),
+            });
+        }
+
+        [HttpDelete("{attachmentId}")]
+        public async Task<IActionResult> DeletePrivateMessageImage(int attachmentId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            _unitOfWork.BeginTransaction();
+            var attachment = _unitOfWork.PrivateMessageAttachments.GetById(attachmentId);
+            if (attachment == null)
+            {
+                return NotFound();
+            }
+            /* delete image */
+            if (attachment != null)
+            {
+                await _cloudinaryService.DeleteAttachment(attachment.PublicId);
+                _unitOfWork.PrivateMessageAttachments.Delete(attachment.AttachmentId);
+            }
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            var message = _unitOfWork.PrivateMsges.GetById(attachment.MessageId);
+            var attachments = _unitOfWork.PrivateMessageAttachments.GetAll().Where(image => image.MessageId == message.MessageId);
+            var user = _unitOfWork.Users.GetById(message.UserId);
+            return Ok(new GetPrivateMessageDTO
+            {
+                MessageId = message.MessageId,
+                UserId = message.UserId,
+                Avatar = user.Avatar,
+                UserName = user.UserName,
+                Receiver = message.Receiver,
+                Content = message.Content,
+                Attachments = attachments?.Select(i => new GetPrivateMessageAttachmentDTO
+                {
+                    AttachmentId = i.AttachmentId,
+                    Url = i.Url,
+                    MessageId = i.MessageId,
+                    ContentType = i.ContentType,
+                    PublicId = i.PublicId,
+                    DisplayName = i.DisplayName,
+                    DownloadLink = i.DownloadLink,
+                })?.ToList() ?? new List<GetPrivateMessageAttachmentDTO>(),
+                DateCreated = message.DateCreated.ToString("yyyy-MM-dd HH:mm"),
+            });
         }
     }
 }

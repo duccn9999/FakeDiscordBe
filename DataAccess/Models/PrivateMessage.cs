@@ -18,6 +18,6 @@ namespace DataAccesses.Models
         public string? Content { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime? DateModified { get; set; }
-        public IEnumerable<PrivateMessageImage>? Images { get; set; }
+        public IEnumerable<PrivateMessageAttachment>? Attachments { get; set; }
     }
 }

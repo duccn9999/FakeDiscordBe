@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace BusinessLogics.RepositoriesImpl
 {
-    public class PrivateMessageImageRepository : GenericRepository<PrivateMessageImage>, IPrivateMessageImageRepository
+    public class PrivateMessageAttachmentRepository : GenericRepository<PrivateMessageAttachment>, IPrivateMessageAttachmentRepository
     {
-        public PrivateMessageImageRepository(FakeDiscordContext context) : base(context)
+        public PrivateMessageAttachmentRepository(FakeDiscordContext context) : base(context)
         {
         }
     }

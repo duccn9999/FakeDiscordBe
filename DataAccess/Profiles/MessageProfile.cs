@@ -8,7 +8,7 @@ namespace DataAccesses.Profiles
     {
         public MessageProfile()
         {
-            CreateMap<CreateMessageDTO, Message>();
+            CreateMap<CreateMessageDTO, Message>().ForMember(dest => dest.Attachments, opt => opt.Ignore()); ;
             CreateMap<UpdateMessageDTO, Message>();
             CreateMap<Message, GetMessageDTO>();
         }

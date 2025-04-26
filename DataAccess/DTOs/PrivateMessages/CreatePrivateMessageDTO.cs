@@ -8,7 +8,7 @@ namespace DataAccesses.DTOs.PrivateMessages
         public int UserId { get; set; }
         public int Receiver { get; set; }
         public string? Content { get; set; }
-        public List<IFormFile>? Images { get; set; }
+        public List<IFormFile>? Attachments { get; set; }
         [JsonIgnore]
         public DateTime DateCreated = DateTime.Now;
     }

@@ -21,7 +21,8 @@ namespace DataAccesses.Models
         public DbSet<AllowedUser> AllowedUsers { get; set; }
         public DbSet<UserFriend> UserFriends { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-        public DbSet<PrivateMessageImage> PrivateMessageImages { get; set; }
+        public DbSet<PrivateMessageAttachment> PrivateMessageAttachments { get; set; }
+        public DbSet<MessageAttachment> MessageAttachments { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserRole>()

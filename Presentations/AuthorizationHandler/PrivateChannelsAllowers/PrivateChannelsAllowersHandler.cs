@@ -67,11 +67,10 @@ namespace Presentations.AuthorizationHandler.AllowedIds
 
         private async Task<int?> GetChannelIdFromRequest(HttpContext httpContext)
         {
-            // Check if the custom parameter exists in the query string
-            if (httpContext.Request.Query.TryGetValue("custom", out var customValue) &&
-                int.TryParse(customValue, out var parsedCustomId))
+            if (httpContext.Request.RouteValues.TryGetValue("channelId", out var channelValue) &&
+                int.TryParse(channelValue.ToString(), out var parsedChannelId))
             {
-                return parsedCustomId;
+                return parsedChannelId;
             }
             return null;
         }

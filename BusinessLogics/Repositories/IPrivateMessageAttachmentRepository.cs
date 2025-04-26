@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace BusinessLogics.Repositories
 {
-    public interface IPrivateMessageImageRepository : IGenericRepository<PrivateMessageImage>
+    public interface IPrivateMessageAttachmentRepository : IGenericRepository<PrivateMessageAttachment>
     {
     }
 }

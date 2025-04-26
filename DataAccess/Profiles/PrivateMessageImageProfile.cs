@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using DataAccesses.DTOs.PrivateMessageImages;
+using DataAccesses.DTOs.PrivateMessageAttachments;
 using DataAccesses.Models;
 
 namespace DataAccesses.Profiles
@@ -8,7 +8,7 @@ namespace DataAccesses.Profiles
     {
         public PrivateMessageImageProfile()
         {
-            CreateMap<CreatePrivateMessageImageDTO, PrivateMessageImage>();
+            CreateMap<CreatePrivateMessageAttachmentDTO, PrivateMessageAttachment>();
         }
     }
 }

@@ -1,13 +1,10 @@
-﻿using DataAccesses.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DataAccesses.DTOs.Roles;
+using DataAccesses.Models;
 
 namespace BusinessLogics.Repositories
 {
     public interface IRoleRepository : IGenericRepository<Role>
     {
+        public IEnumerable<GetRoleDTO> GetRolesByGroupChatId(int groupChatId);
     }
 }

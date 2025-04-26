@@ -8,26 +8,27 @@ namespace BusinessLogics.RepositoriesImpl
     public class CloudinaryService : ICloudinaryService
     {
         private readonly Cloudinary cloudinary;
-        const string CLOUDINARY_CONNECT_STRING = "cloudinary://531895637933677:vA2g3XJb6DfuY8D5MeZyL4GEybQ@dywexvvcy";
+        const string API_KEY = "vA2g3XJb6DfuY8D5MeZyL4GEybQ";
+        const string CLOUDINARY_CONNECT_STRING = $"cloudinary://531895637933677:{API_KEY}@dywexvvcy";
         public CloudinaryService()
         {
             cloudinary = new Cloudinary(CLOUDINARY_CONNECT_STRING);
             cloudinary.Api.Secure = true;
         }
 
-        public async Task<DeletionResult> DeleteImage(string publicId)
+        public async Task<DeletionResult> DeleteAttachment(string publicId)
         {
             var deleteParams = new DeletionParams(publicId)
             {
-                ResourceType = ResourceType.Image
+                ResourceType = ResourceType.Auto
             };
             var result = await cloudinary.DestroyAsync(deleteParams);
             return result;
         }
 
-        public async Task UpdateImage(string img)
+        public async Task UpdateAttachment(string file)
         {
-            var updateParams = new UpdateParams(img)
+            var updateParams = new UpdateParams(file)
             {
                 Tags = "important",
                 ModerationStatus = ModerationStatus.Approved
@@ -35,33 +36,64 @@ namespace BusinessLogics.RepositoriesImpl
             var updateResult = cloudinary.UpdateResource(updateParams);
         }
 
-        public async Task<string> UploadImage(IFormFile img)
+        public async Task<CloundinaryResponse> UploadAttachment(IFormFile file)
         {
             var uploadResult = new ImageUploadResult();
-            if (img.Length > 0)
+            if (file.Length > 0)
             {
-                using var stream = img.OpenReadStream();
-                var uploadParams = new ImageUploadParams()
+                using var stream = file.OpenReadStream();
+                var uploadParams = new AutoUploadParams()
                 {
-                    File = new FileDescription(img.FileName, stream),
+                    File = new FileDescription(file.FileName, stream),
                     UseFilename = true,
                     UniqueFilename = false,
-                    Overwrite = true
+                    Overwrite = true,
                 };
                 uploadResult = await cloudinary.UploadAsync(uploadParams);
-                return uploadResult.SecureUrl.ToString();
+                return new CloundinaryResponse
+                {
+                    AssetId = uploadResult.AssetId,
+                    PublicId = uploadResult.PublicId,
+                    Width = uploadResult.Width.ToString(),
+                    Height = uploadResult.Height.ToString(),
+                    Format = uploadResult.Format,
+                    ResourceType = uploadResult.ResourceType,
+                    CreatedAt = uploadResult.CreatedAt.ToString("yyyy-MM-dd HH:mm"),
+                    Pages = uploadResult.Pages,
+                    Bytes = uploadResult.Bytes.ToString(),
+                    Type = uploadResult.Type,
+                    Placeholder = uploadResult.Placeholder.ToString(),
+                    Url = uploadResult.Url.ToString(),
+                    SecureUrl = uploadResult.SecureUrl.ToString(),
+                    AssetFolder = uploadResult.AssetFolder,
+                    DisplayName = uploadResult.DisplayName,
+                    OriginalFilename = uploadResult.OriginalFilename,
+                };
             }
             else
             {
-                throw new Exception("Image is empty");
+                throw new Exception("File is empty");
             }
         }
 
-        public string GetImagePublicId(string img)
+        public string GetDownloadLink(string url, string originalFileName, string displayName)
         {
-            string lastPart = img.Substring(img.LastIndexOf('/') + 1);
-            string filenameWithoutExtension = lastPart.Substring(0, lastPart.LastIndexOf('.'));
-            return filenameWithoutExtension;
+            if (string.IsNullOrWhiteSpace(url))
+                return url;
+
+            const string uploadSegment = "/upload/";
+            int index = url.IndexOf(uploadSegment);
+            if (index == -1)
+                return url;
+
+            // Build the transformation string
+            string transformation = $"f_auto/fl_attachment:{originalFileName}/";
+
+            // Insert transformation right after /upload/
+            string result = url.Insert(index + uploadSegment.Length, transformation);
+
+            return result;
         }
+
     }
 }

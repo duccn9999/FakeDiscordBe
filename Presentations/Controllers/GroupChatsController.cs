@@ -21,14 +21,14 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ICloudinaryService _cloudinaryService;
         private RandomStringGenerator _randomStringGenerator;
-        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub, ICloudinaryService cloudinaryService, RandomStringGenerator randomStringGenerator)
+        private readonly ICloudinaryService _cloudinaryService;
+        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub, RandomStringGenerator randomStringGenerator, ICloudinaryService cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _cloudinaryService = cloudinaryService;
             _randomStringGenerator = randomStringGenerator;
+            _cloudinaryService = cloudinaryService;
         }
         [HttpGet("GetJoinedGroupChats/{userId}")]
         public async Task<IActionResult> GetJoinedGroupChats(int userId)
@@ -58,9 +58,9 @@ namespace Presentations.Controllers
             }
             _unitOfWork.BeginTransaction();
             // upload image to cloudinary
-            var uploadedCoverImage = await _cloudinaryService.UploadImage(model.CoverImage);
+            var uploadedCoverImage = await _cloudinaryService.UploadAttachment(model.CoverImage);
             var groupChat = _mapper.Map<GroupChat>(model);
-            groupChat.CoverImage = uploadedCoverImage;
+            groupChat.CoverImage = uploadedCoverImage.Url;
             groupChat.InviteCode = _randomStringGenerator.GenerateUniqueRandomString(7);
             _unitOfWork.GroupChats.Insert(groupChat);
             _unitOfWork.Save();
@@ -176,8 +176,8 @@ namespace Presentations.Controllers
             var groupChat = _unitOfWork.GroupChats.GetById(model.GroupChatId);
             if (model.CoverImage != null)
             {
-                var uploadedCoverImage = await _cloudinaryService.UploadImage(model.CoverImage);
-                groupChat.CoverImage = uploadedCoverImage;
+                var uploadedCoverImage = await _cloudinaryService.UploadAttachment(model.CoverImage);
+                groupChat.CoverImage = uploadedCoverImage.Url;
             }
             _mapper.Map(model, groupChat);
             _unitOfWork.GroupChats.Update(groupChat);

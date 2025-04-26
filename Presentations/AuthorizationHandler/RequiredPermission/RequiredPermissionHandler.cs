@@ -2,6 +2,7 @@
 using DataAccesses.DTOs.UserRoles;
 using DataAccesses.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Text;
@@ -70,60 +71,134 @@ namespace Presentations.AuthorizationHandler.RequiredPermission
                 return null;
             }
 
-            if (httpContext.Request.Method == HttpMethods.Get || httpContext.Request.Method == HttpMethods.Delete)
+            // Try to get from route parameters first (applies to all HTTP methods)
+            var routeData = httpContext.GetRouteData();
+            if (routeData?.Values != null)
             {
-                // Try to get from route parameters
-                var routeData = httpContext.GetRouteData();
-                if (routeData?.Values["groupChatId"] is string routeGroupChatId &&
-                    int.TryParse(routeGroupChatId, out var parsedGroupChatId))
+                // Check for groupChatId directly
+                if (TryParseRouteValue(routeData.Values, "groupChatId", out var parsedGroupChatId))
                 {
                     return parsedGroupChatId;
                 }
-                if (routeData?.Values["roleId"] is string routeRoleId &&
-                    int.TryParse(routeRoleId, out var parsedRoleId))
+
+                // Check for roleId and get associated groupChatId
+                if (TryParseRouteValue(routeData.Values, "roleId", out var parsedRoleId))
                 {
-                    return parsedRoleId;
+                    return await GetGroupChatIdFromRoleId(parsedRoleId);
                 }
-                // Fall back to query parameters
+            }
+
+            // For GET/DELETE requests, check query string
+            if (httpContext.Request.Method == HttpMethods.Get || httpContext.Request.Method == HttpMethods.Delete)
+            {
                 if (httpContext.Request.Query.TryGetValue("groupChatId", out var groupChatIdStr) &&
                     int.TryParse(groupChatIdStr, out var groupChatId))
                 {
                     return groupChatId;
                 }
             }
+            // For POST/PUT requests, check form and body
             else if (httpContext.Request.Method == HttpMethods.Post || httpContext.Request.Method == HttpMethods.Put)
             {
-                // Enable buffering to read body multiple times
-                httpContext.Request.EnableBuffering();
-
-                using var reader = new StreamReader(httpContext.Request.Body, Encoding.UTF8, leaveOpen: true);
-                var body = await reader.ReadToEndAsync();
-                httpContext.Request.Body.Position = 0; // Reset stream position
-
-                if (!string.IsNullOrEmpty(body))
+                // Check form data
+                if (httpContext.Request.HasFormContentType)
                 {
-                    var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(body);
+                    var form = await httpContext.Request.ReadFormAsync();
 
-                    if (json.TryGetValue("groupChatId", out var bodyId) && int.TryParse(bodyId.ToString(), out var parsedBodyId))
+                    // Check direct groupChatId 
+                    if (TryParseFormValue(form, "groupChatId", out var parsedFormGroupChatId))
                     {
-                        return parsedBodyId;
+                        return parsedFormGroupChatId;
                     }
 
-                    if (json.TryGetValue("channelId", out var channelBodyId) && int.TryParse(channelBodyId.ToString(), out var parsedChannelId))
+                    // Check channelId and get associated groupChatId
+                    if (TryParseFormValue(form, "channelId", out var parsedFormChannelId))
                     {
-                        var channel = await _unitOfWork.Channels.GetByIdAsync(parsedChannelId);
-                        return channel?.GroupChatId;
+                        return await GetGroupChatIdFromChannelId(parsedFormChannelId);
                     }
 
-                    if (json.TryGetValue("roleId", out var roleBodyId) && int.TryParse(roleBodyId.ToString(), out var parsedRoleId))
+                    // Check roleId and get associated groupChatId
+                    if (TryParseFormValue(form, "roleId", out var parsedFormRoleId))
                     {
-                        var role = await _unitOfWork.Roles.GetByIdAsync(parsedRoleId);
-                        return role?.GroupChatId;
+                        return await GetGroupChatIdFromRoleId(parsedFormRoleId);
+                    }
+                }
+
+                // Check JSON body if content type is application/json
+                if (httpContext.Request.ContentType?.Contains("application/json") == true)
+                {
+                    try
+                    {
+                        // Read the body only if needed
+                        httpContext.Request.EnableBuffering();
+                        using var reader = new StreamReader(httpContext.Request.Body, Encoding.UTF8, leaveOpen: true);
+                        var body = await reader.ReadToEndAsync();
+                        httpContext.Request.Body.Position = 0; // Reset position
+
+                        if (!string.IsNullOrEmpty(body))
+                        {
+                            var json = JsonConvert.DeserializeObject<Dictionary<string, object>>(body);
+                            if (json != null)
+                            {
+                                // Check direct groupChatId
+                                if (TryParseJsonValue(json, "groupChatId", out var parsedBodyId))
+                                {
+                                    return parsedBodyId;
+                                }
+
+                                // Check channelId and get associated groupChatId
+                                if (TryParseJsonValue(json, "channelId", out var parsedChannelId))
+                                {
+                                    return await GetGroupChatIdFromChannelId(parsedChannelId);
+                                }
+
+                                // Check roleId and get associated groupChatId
+                                if (TryParseJsonValue(json, "roleId", out var parsedRoleId))
+                                {
+                                    return await GetGroupChatIdFromRoleId(parsedRoleId);
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new Exception(ex.Message);
                     }
                 }
             }
 
             return null;
+        }
+
+        // Helper methods to reduce redundancy
+        private bool TryParseRouteValue(RouteValueDictionary values, string key, out int result)
+        {
+            result = 0;
+            return values[key] is string value && int.TryParse(value, out result);
+        }
+
+        private bool TryParseFormValue(IFormCollection form, string key, out int result)
+        {
+            result = 0;
+            return form.TryGetValue(key, out var value) && int.TryParse(value, out result);
+        }
+
+        private bool TryParseJsonValue(Dictionary<string, object> json, string key, out int result)
+        {
+            result = 0;
+            return json.TryGetValue(key, out var value) && int.TryParse(value.ToString(), out result);
+        }
+
+        private async Task<int?> GetGroupChatIdFromChannelId(int channelId)
+        {
+            var channel = await _unitOfWork.Channels.GetByIdAsync(channelId);
+            return channel?.GroupChatId;
+        }
+
+        private async Task<int?> GetGroupChatIdFromRoleId(int roleId)
+        {
+            var role = await _unitOfWork.Roles.GetByIdAsync(roleId);
+            return role?.GroupChatId;
         }
 
 

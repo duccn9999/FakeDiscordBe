@@ -8,7 +8,7 @@ namespace DataAccesses.Profiles
     {
         public PrivateMessageProfile()
         {
-            CreateMap<CreatePrivateMessageDTO, PrivateMessage>().ForMember(dest => dest.Images, opt => opt.Ignore());
+            CreateMap<CreatePrivateMessageDTO, PrivateMessage>().ForMember(dest => dest.Attachments, opt => opt.Ignore());
             CreateMap<UpdatePrivateMessageDTO, PrivateMessage>();
         }
     }

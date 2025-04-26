@@ -34,6 +34,24 @@ namespace BusinessLogics.RepositoriesImpl
             return user;
         }
 
+        public IEnumerable<GetUserDTO> GetUsersByRole(int roleId)
+        {
+            var users = from u in _context.Users
+                        join
+                        ur in _context.UserRoles
+                        on u.UserId equals ur.UserId
+                        join r in _context.Roles
+                        on ur.RoleId equals r.RoleId
+                        where r.RoleId == roleId
+                        select new GetUserDTO
+                        {
+                            UserId = u.UserId,
+                            UserName = u.UserName,
+                            Avatar = u.Avatar,
+                        };
+            return users.AsEnumerable();
+        }
+
         public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId)
         {
             var users = from u in _context.Users

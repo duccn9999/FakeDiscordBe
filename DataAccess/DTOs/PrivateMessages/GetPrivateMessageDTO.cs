@@ -1,11 +1,4 @@
-﻿using DataAccesses.DTOs.PrivateMessageImages;
-using DataAccesses.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using DataAccesses.DTOs.PrivateMessageAttachments;
 
 namespace DataAccesses.DTOs.PrivateMessages
 {
@@ -17,7 +10,7 @@ namespace DataAccesses.DTOs.PrivateMessages
         public string Avatar { get; set; }
         public int Receiver { get; set; }
         public string? Content { get; set; }
-        public List<GetPrivateMessageImageDTO>? Images { get; set; }
+        public List<GetPrivateMessageAttachmentDTO>? Attachments { get; set; }
         public string DateCreated { get; set; }
     }
 }

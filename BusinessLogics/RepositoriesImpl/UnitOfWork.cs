@@ -26,7 +26,8 @@ namespace BusinessLogics.RepositoriesImpl
         public IAllowedRolesRepository _allowedRolesRepository;
         public IUserFriendRepository _userFriendRepository;
         public INotificationRepository _notificationRepository;
-        public IPrivateMessageImageRepository _privateMessageImageRepository;
+        public IPrivateMessageAttachmentRepository _privateMessageAttachmentRepository;
+        public IMessageAttachmentRepository _messageAttachmentRepository;
         public UnitOfWork(FakeDiscordContext context, IConfiguration config)
         {
             _context = context;
@@ -48,7 +49,8 @@ namespace BusinessLogics.RepositoriesImpl
         public IAllowedUsersRepository AllowedUsers => _allowedUsersRepository ??= new AllowedUsersRepository(_context);
         public IUserFriendRepository UserFriends => _userFriendRepository ??= new UserFriendRepository(_context);
         public INotificationRepository Notifications => _notificationRepository ??= new NotificationRepository(_context);
-        public IPrivateMessageImageRepository PrivateMessageImages => _privateMessageImageRepository ??= new PrivateMessageImageRepository(_context);
+        public IPrivateMessageAttachmentRepository PrivateMessageAttachments => _privateMessageAttachmentRepository ??= new PrivateMessageAttachmentRepository(_context);
+        public IMessageAttachmentRepository MessageAttachments => _messageAttachmentRepository ??= new MessageAttachmentRepository(_context);
         public void BeginTransaction()
         {
             _transaction = _context.Database.BeginTransaction();

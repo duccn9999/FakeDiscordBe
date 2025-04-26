@@ -1,5 +1,6 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Notifications;
+using DataAccesses.DTOs.PrivateMessages;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -41,6 +42,30 @@ namespace Presentations.Hubs
         {
             var receiver = _unitOfWork.Users.GetById(model.UserId2);
             await Clients.User(receiver.UserName).SendAsync("CancelFriendRequest", model);
+        }
+
+        public async Task SendPrivateMessage(GetPrivateMessageDTO model, int sender, int receiver)
+        {
+            var users = _unitOfWork.Users.GetAll().Where(x => x.UserId == sender || x.UserId == receiver).Select(x => x.UserName).ToList();
+            await Clients.Users(users).SendAsync("SendPrivateMessage", model);
+        }
+
+        public async Task UpdatePrivateMessage(GetPrivateMessageDTO model, int sender, int receiver)
+        {
+            var users = _unitOfWork.Users.GetAll().Where(x => x.UserId == sender || x.UserId == receiver).Select(x => x.UserName).ToList();
+            await Clients.Users(users).SendAsync("UpdatePrivateMessage", model);
+        }
+
+        public async Task DeletePrivateMessage(GetPrivateMessageDTO model, int sender, int receiver)
+        {
+            var users = _unitOfWork.Users.GetAll().Where(x => x.UserId == sender || x.UserId == receiver).Select(x => x.UserName).ToList();
+            await Clients.Users(users).SendAsync("DeletePrivateMessage", model);
+        }
+
+        public async Task DeletePrivateMessageAttachment(GetPrivateMessageDTO model, int sender, int receiver)
+        {
+            var users = _unitOfWork.Users.GetAll().Where(x => x.UserId == sender || x.UserId == receiver).Select(x => x.UserName).ToList();
+            await Clients.Users(users).SendAsync("DeletePrivateMessageAttachment", model);
         }
     }
 }

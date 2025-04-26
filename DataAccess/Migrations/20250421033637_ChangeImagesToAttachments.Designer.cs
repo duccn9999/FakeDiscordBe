@@ -4,6 +4,7 @@ using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    partial class FakeDiscordContextModelSnapshot : ModelSnapshot
+    [Migration("20250421033637_ChangeImagesToAttachments")]
+    partial class ChangeImagesToAttachments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -143,6 +146,9 @@ namespace DataAccesses.Migrations
                     b.Property<DateTime?>("DateModified")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("ReplyTo")
+                        .HasColumnType("int");
+
                     b.Property<int>("UserCreated")
                         .HasColumnType("int");
 
@@ -151,48 +157,6 @@ namespace DataAccesses.Migrations
                     b.HasIndex("ChannelId");
 
                     b.ToTable("Message");
-                });
-
-            modelBuilder.Entity("DataAccesses.Models.MessageAttachment", b =>
-                {
-                    b.Property<int>("AttachmentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AttachmentId"));
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DownloadLink")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("MessageId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OriginalFilename")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PublicId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("AttachmentId");
-
-                    b.HasIndex("MessageId");
-
-                    b.ToTable("MessageAttachment");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Notification", b =>
@@ -295,24 +259,8 @@ namespace DataAccesses.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DownloadLink")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("MessageId")
                         .HasColumnType("int");
-
-                    b.Property<string>("OriginalFilename")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PublicId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Url")
                         .IsRequired()
@@ -506,17 +454,6 @@ namespace DataAccesses.Migrations
                     b.Navigation("Channel");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.MessageAttachment", b =>
-                {
-                    b.HasOne("DataAccesses.Models.Message", "Message")
-                        .WithMany("Attachments")
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Message");
-                });
-
             modelBuilder.Entity("DataAccesses.Models.Notification", b =>
                 {
                     b.HasOne("DataAccesses.Models.User", "User1")
@@ -624,11 +561,6 @@ namespace DataAccesses.Migrations
                     b.Navigation("Channels");
 
                     b.Navigation("Roles");
-                });
-
-            modelBuilder.Entity("DataAccesses.Models.Message", b =>
-                {
-                    b.Navigation("Attachments");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Permission", b =>
