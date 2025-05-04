@@ -28,6 +28,12 @@ namespace Presentations.Controllers
             var result = _unitOfWork.Users.GetUsersInGroupChat(groupChatId);
             return Ok(result);
         }
+        [HttpGet("GetUsersInGroupChatWithRoles/{groupChatId}")]
+        public async Task<IActionResult> GetUsersInGroupChatWithRoles(int groupChatId)
+        {
+            var result = _unitOfWork.Users.GetUsersInGroupChatWithRoles(groupChatId);
+            return Ok(result);
+        }
 
         // PUT api/<UsersController>/5
         [HttpPut("UpdateProfile/{id}")]

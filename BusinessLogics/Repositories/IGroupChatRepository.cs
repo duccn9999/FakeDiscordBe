@@ -11,6 +11,5 @@ namespace BusinessLogics.Repositories
         public Task<GroupChat> GetGroupChatByChannelIdAsync(int channelId);
         public Task<IEnumerable<GetGroupChatDTO>> GetJoinedGroupChatPaginationAsync(int userId, int? page, int items);
         public Task<GroupChat> GetGroupChatByInviteCode(string inviteCode);
-
     }
 }

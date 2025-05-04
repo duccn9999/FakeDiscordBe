@@ -1,5 +1,6 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.UserRoles;
+using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
 using DataAccesses.Utils;
 using Microsoft.EntityFrameworkCore;
@@ -106,6 +107,20 @@ namespace BusinessLogics.RepositoriesImpl
                         };
             var result = await query.ToListAsync();
             return result;
+        }
+
+        public async Task<List<GetUserDTO>> GetUsersByRole(int roleId)
+        {
+            var query = from ur in _context.UserRoles
+                        join u in _context.Users on ur.UserId equals u.UserId
+                        where ur.RoleId == roleId
+                        select new GetUserDTO
+                        {
+                            UserId = u.UserId,
+                            UserName = u.UserName,
+                            Avatar = u.CoverImage
+                        };
+            return query.ToList();
         }
 
         public async Task<List<GetUsersNotInRoleDTO>> GetUsersNotInRole(int groupChatId, int roleId)

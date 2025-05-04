@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.Authorization;
-using System.Runtime.CompilerServices;
 using BusinessLogics.Repositories;
-using DataAccesses.Models;
 using DataAccesses.DTOs.GroupChats;
 using DataAccesses.DTOs.Channels;
+using DataAccesses.DTOs.LastSeenMessages;
 
 namespace Presentations.Hubs
 {
@@ -30,10 +29,17 @@ namespace Presentations.Hubs
             await Clients.User(userId).SendAsync("GroupChatsRefresh");
         }
 
-        public async Task OnLeaveGroupChat(string username, GetGroupChatDTO groupChat)
+        public async Task<GetLastSeenMessageDTO> OnLeaveGroupChat(string username, GetGroupChatDTO groupChat)
         {
+            var lastSeenMessage = await _userTracker.TrackLastMessage(username, _unitOfWork);
+            // Notify other users in the group
+            await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("LeaveGroupChat", lastSeenMessage);
+
+            // Remove user from the group
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupChat.GroupChatId.ToString());
-            await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("LeaveGroupChat", username, groupChat);
+
+            // Return the last seen message to the caller
+            return lastSeenMessage;
         }
         public async Task GetConnectedUser(int groupChatId)
         {

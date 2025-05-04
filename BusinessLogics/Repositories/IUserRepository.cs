@@ -11,6 +11,7 @@ namespace BusinessLogics.Repositories
         public Task<bool> CheckAccoutExistedAsync(string userName, string password);
         public User GetByUsername(string userName);
         public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId);
+        public IEnumerable<GetUserWithRolesDTO> GetUsersInGroupChatWithRoles(int groupChatId);
         public IEnumerable<GetUserDTO> GetUsersByRole(int roleId);
     }
 }

@@ -18,13 +18,14 @@ namespace BusinessLogics.Repositories
         IUserRoleRepository UserRoles { get; }
         IPermissionRepository Permissions { get; }
         IRolePermissionRepository RolePermissions { get; }
-        IAllowedRolesRepository AllowedRoles { get; }
-        IAllowedUsersRepository AllowedUsers { get; }
+        IAllowedRoleRepository AllowedRoles { get; }
+        IAllowedUserRepository AllowedUsers { get; }
         IUserFriendRepository UserFriends { get; }
         INotificationRepository Notifications { get; }
         IPrivateMessageAttachmentRepository PrivateMessageAttachments { get; }
         IMessageAttachmentRepository MessageAttachments { get; }
-
+        IMentionUserRepository MentionUsers { get; }
+        ILastSeenMessageRepository LastSeenMessages { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();

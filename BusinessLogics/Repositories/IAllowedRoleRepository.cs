@@ -2,7 +2,7 @@
 
 namespace BusinessLogics.Repositories
 {
-    public interface IAllowedUsersRepository : IGenericRepository<AllowedUser>
+    public interface IAllowedRoleRepository : IGenericRepository<AllowedRole>
     {
     }
 }

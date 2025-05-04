@@ -21,6 +21,12 @@ namespace Presentations.Hubs
             await Clients.Caller.SendAsync("UserConnected", username);
         }
 
+        public async Task OnDisconnected(string username)
+        {
+            var lastSeenMessage = _userTracker.TrackLastMessage(username, _unitOfWork).Result;
+            await Clients.Caller.SendAsync("UserDisconnected", lastSeenMessage);
+        }
+
         public async Task GetOnlineUsers(int userId)
         {
             await Clients.Caller.SendAsync("GetOnlineUsers");

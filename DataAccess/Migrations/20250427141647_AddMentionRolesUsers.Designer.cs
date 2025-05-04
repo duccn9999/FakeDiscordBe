@@ -4,6 +4,7 @@ using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    partial class FakeDiscordContextModelSnapshot : ModelSnapshot
+    [Migration("20250427141647_AddMentionRolesUsers")]
+    partial class AddMentionRolesUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -122,31 +125,25 @@ namespace DataAccesses.Migrations
                     b.ToTable("GroupChat");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.LastSeenMessage", b =>
+            modelBuilder.Entity("DataAccesses.Models.MentionRole", b =>
                 {
-                    b.Property<int>("LastSeenMessageId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LastSeenMessageId"));
-
-                    b.Property<int>("ChannelId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("DateSeen")
-                        .HasColumnType("datetime2");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("MessageId")
                         .HasColumnType("int");
 
-                    b.Property<int>("UserId")
+                    b.Property<int>("RoleId")
                         .HasColumnType("int");
 
-                    b.HasKey("LastSeenMessageId");
+                    b.HasKey("Id");
 
                     b.HasIndex("MessageId");
 
-                    b.ToTable("LastSeenMessage");
+                    b.ToTable("MentionRole");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.MentionUser", b =>
@@ -156,9 +153,6 @@ namespace DataAccesses.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
 
                     b.Property<int>("MessageId")
                         .HasColumnType("int");
@@ -545,10 +539,10 @@ namespace DataAccesses.Migrations
                     b.Navigation("GroupChat");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.LastSeenMessage", b =>
+            modelBuilder.Entity("DataAccesses.Models.MentionRole", b =>
                 {
                     b.HasOne("DataAccesses.Models.Message", "Message")
-                        .WithMany("LastSeenMessages")
+                        .WithMany("MentionRoles")
                         .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -559,7 +553,7 @@ namespace DataAccesses.Migrations
             modelBuilder.Entity("DataAccesses.Models.MentionUser", b =>
                 {
                     b.HasOne("DataAccesses.Models.Message", "Message")
-                        .WithMany("MentionUsers")
+                        .WithMany()
                         .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -702,9 +696,7 @@ namespace DataAccesses.Migrations
                 {
                     b.Navigation("Attachments");
 
-                    b.Navigation("LastSeenMessages");
-
-                    b.Navigation("MentionUsers");
+                    b.Navigation("MentionRoles");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Permission", b =>

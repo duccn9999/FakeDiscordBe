@@ -1,4 +1,6 @@
-﻿using DataAccesses.Models;
+﻿using BusinessLogics.Repositories;
+using DataAccesses.DTOs.LastSeenMessages;
+using DataAccesses.Models;
 
 namespace Presentations.Hubs
 {
@@ -82,6 +84,45 @@ namespace Presentations.Hubs
                 }
             }
             await Task.CompletedTask;
+        }
+        public async Task<GetLastSeenMessageDTO> TrackLastMessage(string username, IUnitOfWork unitOfWork)
+        {
+            var lastChannel = usersByChannel
+                .Where(x => x.Value.Contains(username))
+                .Select(x => x.Key)
+                .FirstOrDefault();
+            var currentUserId = unitOfWork.Users.GetAll()
+            .Where(x => x.UserName == username)
+            .Select(x => x.UserId)
+            .FirstOrDefault();
+            // get the newest message
+            var newestMessageId = unitOfWork.Messages.GetAll()
+            .Where(x => x.ChannelId == lastChannel)
+            .OrderByDescending(x => x.DateCreated)
+            .Select(x => x.MessageId)
+            .FirstOrDefault();
+
+            var lastSeenMessage = unitOfWork.LastSeenMessages.GetAll()
+            .Where(m => m.UserId == currentUserId && m.ChannelId == lastChannel)
+            .Select(m => new GetLastSeenMessageDTO
+            {
+                UserId = m.UserId,
+                ChannelId = m.ChannelId,
+                MessageId = m.MessageId,
+                DateSeen = m.DateSeen,
+            })
+            .FirstOrDefault() ?? new GetLastSeenMessageDTO
+            {
+                UserId = currentUserId,
+                ChannelId = lastChannel,
+                MessageId = newestMessageId,
+                DateSeen = DateTime.Now
+            };
+            if (lastSeenMessage.ChannelId == 0 || lastSeenMessage.MessageId == 0 || lastSeenMessage.UserId == 0)
+            {
+                return null;
+            }
+            return lastSeenMessage;
         }
     }
 }

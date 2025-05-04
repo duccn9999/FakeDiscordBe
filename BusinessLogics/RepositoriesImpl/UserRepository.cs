@@ -1,5 +1,6 @@
 ﻿using BusinessLogics.Repositories;
 using CloudinaryDotNet.Actions;
+using DataAccesses.DTOs.Roles;
 using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
@@ -71,5 +72,41 @@ namespace BusinessLogics.RepositoriesImpl
                         };
             return users.Distinct().AsEnumerable();
         }
+
+        public IEnumerable<GetUserWithRolesDTO> GetUsersInGroupChatWithRoles(int groupChatId)
+        {
+            var usersWithRoles = (from u in _context.Users
+                                  join ur in _context.UserRoles on u.UserId equals ur.UserId
+                                  join r in _context.Roles on ur.RoleId equals r.RoleId
+                                  where r.GroupChatId == groupChatId
+                                  select new
+                                  {
+                                      u.UserId,
+                                      u.UserName,
+                                      u.Avatar,
+                                      r.RoleId,
+                                      r.RoleName,
+                                      r.Color
+                                  })
+                                 .AsEnumerable() // move to memory
+                                 .GroupBy(x => new { x.UserId, x.UserName, x.Avatar })
+                                 .Select(g => new GetUserWithRolesDTO
+                                 {
+                                     UserId = g.Key.UserId,
+                                     UserName = g.Key.UserName,
+                                     Avatar = g.Key.Avatar,
+                                     Roles = g.Select(x => new GetRoleDTO
+                                     {
+                                         RoleId = x.RoleId,
+                                         RoleName = x.RoleName,
+                                         Color = x.Color
+                                     }).Distinct().ToList()
+                                 })
+                                 .ToList();
+
+            return usersWithRoles;
+        }
+
+
     }
 }

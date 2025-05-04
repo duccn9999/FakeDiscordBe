@@ -23,6 +23,8 @@ namespace DataAccesses.Models
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<PrivateMessageAttachment> PrivateMessageAttachments { get; set; }
         public DbSet<MessageAttachment> MessageAttachments { get; set; }
+        public DbSet<MentionUser> MentionUsers { get; set; }
+        public DbSet<LastSeenMessage> LastSeenMessages { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserRole>()

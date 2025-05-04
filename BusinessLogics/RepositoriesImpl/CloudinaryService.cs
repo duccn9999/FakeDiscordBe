@@ -48,6 +48,7 @@ namespace BusinessLogics.RepositoriesImpl
                     UseFilename = true,
                     UniqueFilename = false,
                     Overwrite = true,
+                    Transformation = new Transformation().Quality("auto").FetchFormat("auto").Crop("scale"),
                 };
                 uploadResult = await cloudinary.UploadAsync(uploadParams);
                 return new CloundinaryResponse

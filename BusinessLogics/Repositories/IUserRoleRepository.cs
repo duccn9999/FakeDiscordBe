@@ -1,4 +1,5 @@
 ﻿using DataAccesses.DTOs.UserRoles;
+using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
 
 namespace BusinessLogics.Repositories
@@ -12,5 +13,6 @@ namespace BusinessLogics.Repositories
         public Task<List<GetUsersNotInRoleDTO>> GetUsersNotInRole(int groupChatId, int roleId);
         public Task<List<UserRoleDTO>> GetRolesByUserInGroupChat(int groupChatId, int userId);
         public List<GetAllRolesByUserDTO> GetAllRolesByUser(int userId);
+        public Task<List<GetUserDTO>> GetUsersByRole(int roleId);
     }
 }

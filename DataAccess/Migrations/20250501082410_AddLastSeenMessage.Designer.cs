@@ -4,6 +4,7 @@ using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    partial class FakeDiscordContextModelSnapshot : ModelSnapshot
+    [Migration("20250501082410_AddLastSeenMessage")]
+    partial class AddLastSeenMessage
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,7 +152,7 @@ namespace DataAccesses.Migrations
                     b.ToTable("LastSeenMessage");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.MentionUser", b =>
+            modelBuilder.Entity("DataAccesses.Models.MentionRole", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -157,8 +160,26 @@ namespace DataAccesses.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.ToTable("MentionRole");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.MentionUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("MessageId")
                         .HasColumnType("int");
@@ -556,6 +577,17 @@ namespace DataAccesses.Migrations
                     b.Navigation("Message");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.MentionRole", b =>
+                {
+                    b.HasOne("DataAccesses.Models.Message", "Message")
+                        .WithMany("MentionRoles")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.MentionUser", b =>
                 {
                     b.HasOne("DataAccesses.Models.Message", "Message")
@@ -703,6 +735,8 @@ namespace DataAccesses.Migrations
                     b.Navigation("Attachments");
 
                     b.Navigation("LastSeenMessages");
+
+                    b.Navigation("MentionRoles");
 
                     b.Navigation("MentionUsers");
                 });

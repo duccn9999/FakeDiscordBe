@@ -4,6 +4,7 @@ using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    partial class FakeDiscordContextModelSnapshot : ModelSnapshot
+    [Migration("20250503140103_AddMessageNotification")]
+    partial class AddMessageNotification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -149,7 +152,7 @@ namespace DataAccesses.Migrations
                     b.ToTable("LastSeenMessage");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.MentionUser", b =>
+            modelBuilder.Entity("DataAccesses.Models.MentionRole", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -157,8 +160,26 @@ namespace DataAccesses.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.ToTable("MentionRole");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.MentionUser", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<int>("MessageId")
                         .HasColumnType("int");
@@ -243,6 +264,33 @@ namespace DataAccesses.Migrations
                     b.HasIndex("MessageId");
 
                     b.ToTable("MessageAttachment");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.MessageNotification", b =>
+                {
+                    b.Property<int>("MessageNotificationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MessageNotificationId"));
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MessageId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Source")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MessageNotificationId");
+
+                    b.HasIndex("MessageId");
+
+                    b.ToTable("MessageNotification");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Notification", b =>
@@ -556,6 +604,17 @@ namespace DataAccesses.Migrations
                     b.Navigation("Message");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.MentionRole", b =>
+                {
+                    b.HasOne("DataAccesses.Models.Message", "Message")
+                        .WithMany("MentionRoles")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.MentionUser", b =>
                 {
                     b.HasOne("DataAccesses.Models.Message", "Message")
@@ -582,6 +641,17 @@ namespace DataAccesses.Migrations
                 {
                     b.HasOne("DataAccesses.Models.Message", "Message")
                         .WithMany("Attachments")
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.MessageNotification", b =>
+                {
+                    b.HasOne("DataAccesses.Models.Message", "Message")
+                        .WithMany("MessageNotifications")
                         .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -704,7 +774,11 @@ namespace DataAccesses.Migrations
 
                     b.Navigation("LastSeenMessages");
 
+                    b.Navigation("MentionRoles");
+
                     b.Navigation("MentionUsers");
+
+                    b.Navigation("MessageNotifications");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.Permission", b =>

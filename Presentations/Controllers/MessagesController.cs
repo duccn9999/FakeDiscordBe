@@ -1,14 +1,13 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
+using DataAccesses.DTOs.LastSeenMessages;
+using DataAccesses.DTOs.MentionUsers;
 using DataAccesses.DTOs.MessageAttachments;
 using DataAccesses.DTOs.Messages;
-using DataAccesses.DTOs.PrivateMessageAttachments;
-using DataAccesses.DTOs.PrivateMessages;
 using DataAccesses.Models;
 using DataAccesses.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net.Mail;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -74,6 +73,25 @@ namespace Presentations.Controllers
                 {
                     var attachmentsModel = _mapper.Map<List<MessageAttachment>>(attachmentDtos);
                     _unitOfWork.MessageAttachments.InsertRange(attachmentsModel);
+                    _unitOfWork.Save();
+                }
+            }
+            /* Insert mentions*/
+            if(model.MentionUsers != null && model.MentionUsers.Any())
+            {
+                var mentionUserDtos = new List<CreateMentionUserDTO>();
+                foreach (var userId in model.MentionUsers)
+                {
+                    mentionUserDtos.Add(new CreateMentionUserDTO
+                    {
+                        MessageId = message.MessageId,
+                        UserId = userId
+                    });
+                }
+                if (mentionUserDtos.Any())
+                {
+                    var mentionUsers = _mapper.Map<List<MentionUser>>(mentionUserDtos);
+                    _unitOfWork.MentionUsers.InsertRange(mentionUsers);
                     _unitOfWork.Save();
                 }
             }
@@ -228,6 +246,90 @@ namespace Presentations.Controllers
                     DownloadLink = i.DownloadLink,
                 }).ToList()
             });
+        }
+
+        [HttpPost("AddLastSeenMessage")]
+        public async Task<IActionResult> AddLastSeenMessage(CreateLastSeenMessageDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            _unitOfWork.BeginTransaction();
+            var lastSeenMessage = _unitOfWork.LastSeenMessages.GetAll().FirstOrDefault(x => x.UserId == model.UserId && x.ChannelId == model.ChannelId && x.MessageId == model.MessageId);
+            if(lastSeenMessage != null)
+            {
+                return Ok(new { alreadySeen = true });
+            }
+            else
+            {
+                var newLastSeenMessage = _mapper.Map<LastSeenMessage>(model);
+                _unitOfWork.LastSeenMessages.Insert(newLastSeenMessage);
+                _unitOfWork.Save();
+                _unitOfWork.Commit();
+            }
+            return Ok();
+        }
+        [HttpGet("GetLastSeenMessage/{userId}/{channelId}")]
+        public async Task<IActionResult> GetLastSeenMessage(int userId, int channelId)
+        {
+            var lastSeenMessage = _unitOfWork.LastSeenMessages.GetAll().FirstOrDefault(x => x.UserId == userId && x.ChannelId == channelId);
+            if (lastSeenMessage == null)
+            {
+                var newestMessageId = _unitOfWork.Messages.GetAll()
+                    .Where(x => x.ChannelId == channelId)
+                    .OrderByDescending(x => x.DateCreated)
+                    .Select(x => x.MessageId)
+                    .FirstOrDefault();
+                return Ok(new GetLastSeenMessageDTO
+                {
+                    UserId = userId,
+                    ChannelId = channelId,
+                    MessageId = newestMessageId,
+                    DateSeen = DateTime.Now
+                });
+            }
+            return Ok(new GetLastSeenMessageDTO
+            {
+                UserId = lastSeenMessage.UserId,
+                ChannelId = lastSeenMessage.ChannelId,
+                MessageId = lastSeenMessage.MessageId,
+                DateSeen = lastSeenMessage.DateSeen
+            });
+        }
+
+        [HttpPut("UpdateLastSeenMessage/{userId}/{channelId}")]
+        public async Task<IActionResult> UpdateLastSeenMessage(int userId, int channelId, [FromBody] int messageId)
+        {
+            var lastSeenMessage = _unitOfWork.LastSeenMessages.GetAll().FirstOrDefault(x => x.UserId == userId && x.ChannelId == channelId);
+            if (lastSeenMessage == null)
+            {
+                return NotFound();
+            }
+            var lastSeenMessageDto = new CreateLastSeenMessageDTO
+            {
+                UserId = userId,
+                ChannelId = channelId,
+                MessageId = messageId,
+            };
+            var updatedLastSeenMessage = _mapper.Map(lastSeenMessageDto, lastSeenMessage);
+            _unitOfWork.LastSeenMessages.Update(updatedLastSeenMessage);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(new GetLastSeenMessageDTO
+            {
+                UserId = updatedLastSeenMessage.UserId,
+                ChannelId = updatedLastSeenMessage.ChannelId,
+                MessageId = updatedLastSeenMessage.MessageId,
+                DateSeen = updatedLastSeenMessage.DateSeen
+            });
+        }
+
+        [HttpGet("GetMentionCountByUser/{userId}/{channelId}")]
+        public async Task<IActionResult> GetMentionCountByUser(int userId, int channelId)
+        {
+            var result = _unitOfWork.MentionUsers.GetMentionCountByUser(userId, channelId);
+            return Ok(result);
         }
     }
 }
