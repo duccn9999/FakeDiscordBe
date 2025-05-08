@@ -40,12 +40,10 @@ namespace Presentations.Controllers
             return Ok(result);
         }
 
-        [HttpGet]
-        public IActionResult GetPermissionName([FromQuery] string roleIds)
+        [HttpGet("{userId}/{groupChatId}")]
+        public IActionResult GetPermissionName(int userId, int groupChatId)
         {
-            // Convert the comma-separated string to a list of integers
-            var permissionIdList = roleIds.Split(',').Select(int.Parse).ToList();
-            var result = _unitOfWork.RolePermissions.GetPermissionNameByRoleIds(permissionIdList);
+            var result = _unitOfWork.RolePermissions.GetPermissionNameByRoleIds(userId, groupChatId);
             return Ok(result);
         }
     }

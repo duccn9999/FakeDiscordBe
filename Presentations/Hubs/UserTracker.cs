@@ -124,5 +124,40 @@ namespace Presentations.Hubs
             }
             return lastSeenMessage;
         }
+        public async Task<GetLastSeenMessageDTO> TrackLastMessage(string username, IUnitOfWork unitOfWork, int channelId)
+        {
+            var currentUserId = unitOfWork.Users.GetAll()
+            .Where(x => x.UserName == username)
+            .Select(x => x.UserId)
+            .FirstOrDefault();
+            // get the newest message
+            var newestMessageId = unitOfWork.Messages.GetAll()
+            .Where(x => x.ChannelId == channelId)
+            .OrderByDescending(x => x.DateCreated)
+            .Select(x => x.MessageId)
+            .FirstOrDefault();
+
+            var lastSeenMessage = unitOfWork.LastSeenMessages.GetAll()
+            .Where(m => m.UserId == currentUserId && m.ChannelId == channelId)
+            .Select(m => new GetLastSeenMessageDTO
+            {
+                UserId = m.UserId,
+                ChannelId = m.ChannelId,
+                MessageId = m.MessageId,
+                DateSeen = m.DateSeen,
+            })
+            .FirstOrDefault() ?? new GetLastSeenMessageDTO
+            {
+                UserId = currentUserId,
+                ChannelId = channelId,
+                MessageId = newestMessageId,
+                DateSeen = DateTime.Now
+            };
+            if (lastSeenMessage.ChannelId == 0 || lastSeenMessage.MessageId == 0 || lastSeenMessage.UserId == 0)
+            {
+                return null;
+            }
+            return lastSeenMessage;
+        }
     }
 }

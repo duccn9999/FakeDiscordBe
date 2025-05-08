@@ -34,8 +34,6 @@ namespace BusinessLogics.RepositoriesImpl
                 new("email", user.Email),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
-            var roleClaims = _userRoles.GetAllRolesByUser(user.UserId);
-            claims.Add(new Claim("roles", JsonConvert.SerializeObject(roleClaims)));
             // need claims
             var token = new JwtSecurityToken(
               null,

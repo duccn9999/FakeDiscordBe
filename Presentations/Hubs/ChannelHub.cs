@@ -2,8 +2,6 @@
 using DataAccesses.DTOs.Channels;
 using DataAccesses.DTOs.LastSeenMessages;
 using DataAccesses.DTOs.Messages;
-using DataAccesses.DTOs.Users;
-using DataAccesses.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -25,12 +23,16 @@ namespace Presentations.Hubs
             var groupChat = _unitOfWork.GroupChats.GetAll().FirstOrDefault(x => x.GroupChatId == channel.GroupChatId);
             // add to channel ( assuming that is a subset of a group )
             await _userTracker.GetUsersByChannel(model.ChannelId, username);
+            /* if no previous channel then take the current channel,
+             * assuming this is the 1st channel that user enter after login
+             */
+            var lastSeenMessage = await _userTracker.TrackLastMessage(username, _unitOfWork, model.ChannelId);
             await Clients.Caller.SendAsync("EnterChannel", username, model);
         }
 
         public async Task<GetLastSeenMessageDTO> OnLeave(string username, GetChannelDTO model)
         {
-            var lastSeenMessage = await _userTracker.TrackLastMessage(username, _unitOfWork);
+            var lastSeenMessage = await _userTracker.TrackLastMessage(username, _unitOfWork, model.ChannelId);
 
             await _userTracker.TrackUsersLeave(model.ChannelId, username);
 
@@ -55,9 +57,14 @@ namespace Presentations.Hubs
             await Clients.Users(_userTracker.usersByChannel[model.ChannelId]).SendAsync("DeleteMessage", model);
         }
 
-        public async Task SendMessageWithTag(GetMessageDTO model)
+        public async Task MarkMentionsAsRead(string username, int channelId)
         {
+            await Clients.User(username).SendAsync("MarkMentionsAsRead", channelId);
+        }
 
+        public async Task SetMentionCount(string username,int channelId, int mentionsCount)
+        {
+            await Clients.User(username).SendAsync("SetMentionCount", new { channelId, mentionsCount});
         }
     }
 }

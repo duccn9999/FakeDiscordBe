@@ -18,14 +18,17 @@ namespace BusinessLogics.RepositoriesImpl
             
         }
 
-        public IEnumerable<string> GetPermissionNameByRoleIds(List<int> roleIds)
+        public IEnumerable<string> GetPermissionNameByRoleIds(int userId, int groupChatId)
         {
-            var result = from rp in _context.RolePermissions
-                         join p in _context.Permissions
-                         on rp.PermissionId equals p.PermissionId
-                         where roleIds.Contains(rp.RoleId)
-                         select rp;
-                return result.Select(x => x.Permission.Value).AsEnumerable();
+            var permissions = (from u in _context.Users
+                               join ur in _context.UserRoles on u.UserId equals ur.UserId
+                               join r in _context.Roles on ur.RoleId equals r.RoleId
+                               join rp in _context.RolePermissions on r.RoleId equals rp.RoleId
+                               join p in _context.Permissions on rp.PermissionId equals p.PermissionId
+                               where r.GroupChatId == groupChatId && u.UserId == userId
+                               select p.Value)
+                              .Distinct().AsEnumerable();
+            return permissions;
         }
 
         public IEnumerable<RolePermissionDTO> GetRolePermissionsByRoleId(int roleId)

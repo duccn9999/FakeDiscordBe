@@ -1,6 +1,7 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.MentionUsers;
 using DataAccesses.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace BusinessLogics.RepositoriesImpl
 {
@@ -11,21 +12,28 @@ namespace BusinessLogics.RepositoriesImpl
             
         }
 
-        public List<GetMentionCountByUserDTO> GetMentionCountByUser(int userId, int channelId)
+        public async Task<GetMentionsCountDTO> GetMentionCountByUser(int userId, int channelId)
         {
-            var result = (from c in _context.Channels
-                          join m in _context.Messages on c.ChannelId equals m.ChannelId
-                          join mu in _context.MentionUsers on m.MessageId equals mu.MessageId
-                          where c.ChannelId == channelId && mu.UserId == userId && mu.IsRead == false
-                          group mu by new { c.ChannelId, mu.UserId, mu.IsRead } into g
-                          select new GetMentionCountByUserDTO
-                          {
-                              ChannelId = g.Key.ChannelId,
-                              UserId = g.Key.UserId,
-                              IsRead = g.Key.IsRead,
-                              TotalMentions = g.Count()
-                          }).ToList();
-            return result;
+            var count = await (from c in _context.Channels
+                               join m in _context.Messages on c.ChannelId equals m.ChannelId
+                               join mu in _context.MentionUsers on m.MessageId equals mu.MessageId
+                               where c.ChannelId == channelId && mu.UserId == userId && mu.IsRead == false
+                               select mu).CountAsync();
+
+            return new GetMentionsCountDTO
+            {
+                ChannelId = channelId,
+                MentionsCount = count
+            };
+        }
+
+
+
+        public async Task MarkMentionsAsRead(int userId)
+        {
+             await _context.MentionUsers
+                .Where(x => x.UserId == userId && !x.IsRead)
+                .ExecuteUpdateAsync(s => s.SetProperty(m => m.IsRead, true));
         }
     }
 }

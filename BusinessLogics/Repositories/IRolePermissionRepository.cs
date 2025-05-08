@@ -13,6 +13,6 @@ namespace BusinessLogics.Repositories
         public void ToggleRolePermission(RolePermission model);
         public IEnumerable<RolePermissionDTO> GetRolePermissionsByRoleId(int roleId);
         public bool HasPermission(List<int> roles, string permission);
-        public IEnumerable<string> GetPermissionNameByRoleIds(List<int> roleIds);
+        public IEnumerable<string> GetPermissionNameByRoleIds(int userId, int groupChatId);
     }
 }

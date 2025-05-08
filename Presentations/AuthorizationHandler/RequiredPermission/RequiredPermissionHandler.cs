@@ -38,13 +38,7 @@ namespace Presentations.AuthorizationHandler.RequiredPermission
                 return;
             }
 
-            var rolesClaim = context.User.FindFirst(ClaimTypes.Role)?.Value;
-            if (string.IsNullOrEmpty(rolesClaim))
-            {
-                return;
-            }
-
-            var userRoles = JsonConvert.DeserializeObject<List<GetAllRolesByUserDTO>>(rolesClaim);
+            var userRoles = _unitOfWork.UserRoles.GetAllRolesByUser(userId);
             var rolesInGroup = userRoles
                 .Where(r => r.GroupChatId == groupChatId)
                 .Select(role => role.RoleId)

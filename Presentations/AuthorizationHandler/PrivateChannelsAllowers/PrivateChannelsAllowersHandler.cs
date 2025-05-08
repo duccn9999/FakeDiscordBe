@@ -29,11 +29,7 @@ namespace Presentations.AuthorizationHandler.AllowedIds
                 return;
             }
 
-            var rolesClaim = context.User.FindFirst(ClaimTypes.Role)?.Value;
-            if (string.IsNullOrEmpty(rolesClaim))
-            {
-                return;
-            }
+            var userRoles = _unitOfWork.UserRoles.GetAllRolesByUser(userId);
             var channelId = await GetChannelIdFromRequest(httpContext);
             var channel = _unitOfWork.Channels.GetById(channelId);
             // if this is public channel
@@ -42,7 +38,6 @@ namespace Presentations.AuthorizationHandler.AllowedIds
                 context.Succeed(requirement);
                 return;
             }
-            var userRoles = JsonConvert.DeserializeObject<List<GetAllRolesByUserDTO>>(rolesClaim) ?? new();
             // in private channels, find the list channels that contains claims
             var claims = _unitOfWork.Channels.GetAllowedClaimsByPrivateChannel(channelId.Value).ToHashSet();
 

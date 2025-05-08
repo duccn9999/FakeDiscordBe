@@ -306,6 +306,7 @@ namespace Presentations.Controllers
             {
                 return NotFound();
             }
+            _unitOfWork.BeginTransaction();
             var lastSeenMessageDto = new CreateLastSeenMessageDTO
             {
                 UserId = userId,
@@ -328,8 +329,18 @@ namespace Presentations.Controllers
         [HttpGet("GetMentionCountByUser/{userId}/{channelId}")]
         public async Task<IActionResult> GetMentionCountByUser(int userId, int channelId)
         {
-            var result = _unitOfWork.MentionUsers.GetMentionCountByUser(userId, channelId);
+            var result = await _unitOfWork.MentionUsers.GetMentionCountByUser(userId, channelId);
             return Ok(result);
+        }
+        [HttpPut("MarkMentionsAsRead/{userId}/{channelId}")]
+        public async Task<IActionResult> MarkMentionsAsRead(int userId, int channelId)
+        {
+            _unitOfWork.BeginTransaction();
+            await _unitOfWork.MentionUsers.MarkMentionsAsRead(userId);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            var getMentionsCount = await _unitOfWork.MentionUsers.GetMentionCountByUser(userId, channelId);
+            return Ok(getMentionsCount);
         }
     }
 }

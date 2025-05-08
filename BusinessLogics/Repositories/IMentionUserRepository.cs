@@ -5,6 +5,7 @@ namespace BusinessLogics.Repositories
 {
     public interface IMentionUserRepository : IGenericRepository<MentionUser>
     {
-        public List<GetMentionCountByUserDTO> GetMentionCountByUser(int userId, int channelId);
+        public Task<GetMentionsCountDTO> GetMentionCountByUser(int userId, int channelId);
+        public Task MarkMentionsAsRead(int userId);
     }
 }
