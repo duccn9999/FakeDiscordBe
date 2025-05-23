@@ -23,7 +23,7 @@ namespace BusinessLogics.Repositories
         public string DisplayName { get; set; }
         public string OriginalFilename { get; set; }
     }
-    public interface ICloudinaryService
+    public interface ICloudinaryRepository
     {
         public Task<CloundinaryResponse> UploadAttachment(IFormFile file);
         public Task UpdateAttachment(string file);

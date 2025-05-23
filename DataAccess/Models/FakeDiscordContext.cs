@@ -25,6 +25,9 @@ namespace DataAccesses.Models
         public DbSet<MessageAttachment> MessageAttachments { get; set; }
         public DbSet<MentionUser> MentionUsers { get; set; }
         public DbSet<LastSeenMessage> LastSeenMessages { get; set; }
+        public DbSet<EmailToken> EmailTokens { get; set; }
+        public DbSet<GroupChatBlackList> GroupChatBlackLists { get; set; }
+        public DbSet<SuperAdmin> SuperAdmins { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserRole>()
@@ -55,12 +58,6 @@ namespace DataAccesses.Models
                 .HasForeignKey(rp => rp.PermissionId);
             modelBuilder.Entity<RolePermission>()
         .HasKey(rp => new { rp.RoleId, rp.PermissionId });
-
-            modelBuilder.Entity<AllowedRole>()
-        .HasKey(ar => new { ar.ChannelId, ar.RoleId });
-            modelBuilder.Entity<AllowedUser>()
-        .HasKey(ar => new { ar.ChannelId, ar.UserId });
         }
-
     }
 }

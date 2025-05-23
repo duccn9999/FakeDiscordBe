@@ -17,8 +17,8 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ICloudinaryService _cloudinaryService;
-        public PrivateMessagesController(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryService cloudinaryService)
+        private readonly ICloudinaryRepository _cloudinaryService;
+        public PrivateMessagesController(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryRepository cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -26,9 +26,9 @@ namespace Presentations.Controllers
         }
         // GET: api/<PrivateMessagesController>
         [HttpGet("{sender}/{receiver}")]
-        public async Task<IActionResult> GetPrivateMsgesPagination(int sender, int receiver)
+        public async Task<IActionResult> GetPrivateMsgesPagination(int sender, int receiver, int page, int itemsPerPage)
         {
-            var result = _unitOfWork.PrivateMsges.GetPrivateMsges(sender, receiver);
+            var result = await _unitOfWork.PrivateMsges.GetPrivateMsgesPagination(sender, receiver, page, itemsPerPage);
             return Ok(result);
         }
 

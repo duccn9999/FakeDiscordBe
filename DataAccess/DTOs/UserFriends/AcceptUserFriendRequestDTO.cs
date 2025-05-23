@@ -12,6 +12,6 @@ namespace DataAccesses.DTOs.UserFriends
         public int UserId1 { get; set; }
         public int UserId2 { get; set; }
         [JsonIgnore]
-        public bool Status { get; set; } = true;
+        public int Status { get; set; } = 1;
     }
 }

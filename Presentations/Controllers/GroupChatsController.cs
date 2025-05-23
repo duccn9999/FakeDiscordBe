@@ -1,11 +1,13 @@
 ﻿
 using AutoMapper;
 using BusinessLogics.Repositories;
+using DataAccesses.DTOs.GroupChatBlackLists;
 using DataAccesses.DTOs.GroupChats;
 using DataAccesses.DTOs.RolePermissions;
 using DataAccesses.DTOs.Roles;
 using DataAccesses.DTOs.UserGroupChats;
 using DataAccesses.DTOs.UserRoles;
+using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
 using DataAccesses.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -22,8 +24,8 @@ namespace Presentations.Controllers
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private RandomStringGenerator _randomStringGenerator;
-        private readonly ICloudinaryService _cloudinaryService;
-        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub, RandomStringGenerator randomStringGenerator, ICloudinaryService cloudinaryService)
+        private readonly ICloudinaryRepository _cloudinaryService;
+        public GroupChatsController(IUnitOfWork unitOfWork, IMapper mapper, IHubContext<UserHub> fakeDiscordHub, RandomStringGenerator randomStringGenerator, ICloudinaryRepository cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -200,6 +202,7 @@ namespace Presentations.Controllers
             _unitOfWork.BeginTransaction();
             var groupChat = _unitOfWork.GroupChats.GetById(id);
             _unitOfWork.GroupChats.Delete(id);
+            _unitOfWork.Save();
             var userRoles = _unitOfWork.UserRoles.GetUserRolesByUserId(groupChat.UserCreated);
             _unitOfWork.UserRoles.DeleteRange(userRoles);
             _unitOfWork.Save();
@@ -212,6 +215,12 @@ namespace Presentations.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+            // check if user is blocked or not
+            var isBlocked = _unitOfWork.GroupChatBlackLists.GetAll().SingleOrDefault(x => x.UserId == model.UserId && x.GroupChatId == model.GroupChatId) != null;
+            if (isBlocked)
+            {
+                return BadRequest("You has been banned from this Group Chat!!!!");
             }
             _unitOfWork.BeginTransaction();
             var memberRole = _unitOfWork.Roles.GetAll().FirstOrDefault(x => x.RoleName == RolesSeed.MEMBER_ROLE && x.GroupChatId == model.GroupChatId);
@@ -239,5 +248,91 @@ namespace Presentations.Controllers
             var result = _mapper.Map<GetGroupChatDTO>(GroupChat);
             return Ok(result);
         }
+
+        [HttpDelete("[action]/{userId}/{groupChatId}")]
+        public async Task<IActionResult> KickMember(int userId, int groupChatId)
+        {
+            var members = _unitOfWork.Users.GetUsersInGroupChat(groupChatId);
+            var user = _unitOfWork.Users.GetById(userId);
+            var responseModel = new GetUserDTO
+            {
+                UserId = user.UserId,
+                Avatar = user.Avatar,
+                UserName = user.UserName
+            };
+            if(!members.Select(member => member.UserId).Contains(userId))
+            {
+                return NotFound();
+            }
+            _unitOfWork.BeginTransaction();
+            var roles = await _unitOfWork.UserRoles.GetRolesByUserInGroupChat(groupChatId, userId);
+            var roleIds = roles.Select(r => r.RoleId).ToList();
+            var userRoles = _unitOfWork.UserRoles.GetAll()
+                .Where(ur => ur.UserId == userId && roleIds.Contains(ur.RoleId))
+                .ToList();
+            _unitOfWork.UserRoles.DeleteRange(userRoles);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(responseModel);
+        }
+        [HttpDelete("[action]")]
+        public async Task<IActionResult> BanMember(AddToBlackListDTO model)
+        {
+            var members = _unitOfWork.Users.GetUsersInGroupChat(model.GroupChatId);
+            var user = _unitOfWork.Users.GetById(model.UserId);
+            var responseModel = new GetUserDTO
+            {
+                UserId = user.UserId,
+                Avatar = user.Avatar,
+                UserName = user.UserName
+            };
+            if (!members.Select(member => member.UserId).Contains(model.UserId))
+            {
+                return NotFound();
+            }
+            _unitOfWork.BeginTransaction();
+            var roles = await _unitOfWork.UserRoles.GetRolesByUserInGroupChat(model.GroupChatId, model.UserId);
+            var roleIds = roles.Select(r => r.RoleId).ToList();
+            var userRoles = _unitOfWork.UserRoles.GetAll()
+                .Where(ur => ur.UserId == model.UserId && roleIds.Contains(ur.RoleId))
+                .ToList();
+            _unitOfWork.UserRoles.DeleteRange(userRoles);
+            _unitOfWork.Save();
+            var addToBlackList = _mapper.Map<GroupChatBlackList>(model);
+            _unitOfWork.GroupChatBlackLists.Insert(addToBlackList);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(responseModel);
+        }
+
+        [HttpGet("[action]/{groupChatId}")]
+        public async Task<IActionResult> GetBlockedUsers(int groupChatId)
+        {
+            return Ok(_unitOfWork.Users.GetBlockedUsers(groupChatId));
+        }
+
+        [HttpDelete("[action]/{blackListId}")]
+        public async Task<IActionResult> UnblockUser(int blackListId)
+        {
+            var blockUser = _unitOfWork.GroupChatBlackLists.GetById(blackListId);
+            var user = _unitOfWork.Users.GetById(blockUser.UserId);
+            var responseModel = new GetBlockedUserDTO
+            {
+                BlackListId = blackListId,
+                UserId = blockUser.UserId,
+                UserName = user.UserName,
+                Avatar = user.UserName
+            };
+            if(blockUser == null)
+            {
+                return NotFound();
+            }
+            _unitOfWork.BeginTransaction();
+            _unitOfWork.GroupChatBlackLists.Delete(blackListId);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(responseModel);
+        }
+
     }
 }

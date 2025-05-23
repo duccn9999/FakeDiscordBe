@@ -5,5 +5,6 @@ namespace BusinessLogics.Repositories
     public interface IUserFriendRepository : IGenericRepository<UserFriend>
     {
         public IEnumerable<GetUserFriendDTO> GetFriendsByUser(int userId);
+        public IEnumerable<GetUserFriendDTO> GetBlockedUsers(int userId);
     }
 }

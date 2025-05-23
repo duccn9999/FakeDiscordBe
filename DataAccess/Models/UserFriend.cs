@@ -14,7 +14,8 @@ namespace DataAccesses.Models
         public User User1 { get; set; }
         // The user with the larger ID
         public int UserId2 { get; set; }
-        public bool Status { get; set; }
+        // 0 - pending, 1 - accepted, 2 - blocked, deleted - not accepted
+        public int Status { get; set; }
         public DateTime RequestDate { get; set; }
     }
 }

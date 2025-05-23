@@ -16,6 +16,9 @@ namespace DataAccesses.Profiles
         {
             CreateMap<CreateChannelDTO, Channel>();
             CreateMap<UpdateChannelDTO, Channel>();
+            CreateMap<CreatePrivateChannelDTO, Channel>()
+                .ForMember(dest => dest.AllowedUsers, opt => opt.Ignore())
+                .ForMember(dest => dest.AllowedRoles, opt => opt.Ignore());
         }
     }
 }

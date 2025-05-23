@@ -5,8 +5,8 @@
         /* sender */
         public int UserId1 { get; set; }
         public string Receiver { get; set; }
-        /* False = not accept yet, True = accepted */
-        public bool Status { get; set; } = false;
+        /* 0 = pending, 1 = accepted, 2 = blocked, deleted = not accepted */
+        public int Status { get; set; } = 0;
         public DateTime RequestDate { get; set; } = DateTime.Now;
     }
 }

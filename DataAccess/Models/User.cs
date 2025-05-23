@@ -14,11 +14,11 @@ namespace DataAccesses.Models
         [Required]
         public string Password { get; set; }
         public string? Avatar { get; set; }
-        public string? CoverImage { get; set; }
         [Required]
         public string Email { get; set; }
         public DateTime DateCreated { get; set; }
         public DateTime? DateModified { get; set; }
+        public bool IsActive { get; set; }
         public IEnumerable<PrivateMessage>? PrivateMessages { get; set; }
         public IEnumerable<UserRole> UserRoles { get; set; }
         [InverseProperty("User1")]

@@ -22,7 +22,10 @@ namespace Presentations.Hubs
             await Groups.AddToGroupAsync(Context.ConnectionId, groupChat.GroupChatId.ToString());
             await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("EnterGroupChat", username, groupChat);
         }
-
+        public async Task OnConnected(string username)
+        {
+            await Clients.User(username).SendAsync("OnConnected", username);
+        }
         public async Task OnRefreshGroupChats()
         {
             string userId = Context.UserIdentifier;

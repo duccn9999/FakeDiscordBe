@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
+using DataAccesses.DTOs.AllowedRoles;
+using DataAccesses.DTOs.AllowedUsers;
 using DataAccesses.DTOs.Channels;
-using DataAccesses.DTOs.GroupChatParticipations;
 using DataAccesses.Models;
 using DataAccesses.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
-using Presentations.Hubs;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -94,14 +93,9 @@ namespace Presentations.Controllers
                 return BadRequest(ModelState); // Return bad request if the model is invalid
             }
             _unitOfWork.BeginTransaction();
-            var channelDto = new CreateChannelDTO
-            {
-                ChannelName = model.ChannelName,
-                GroupChatId = model.GroupChatId,
-                UserCreated = model.UserCreated,
-            };
-            var channel = _mapper.Map<Channel>(channelDto);
+            var channel = _mapper.Map<Channel>(model);
             _unitOfWork.Channels.Insert(channel);
+            _unitOfWork.Save();
             var rolesInChannelDto = model.Roles;
             var usersInChannelDto = model.Users;
             var rolesInChannel = rolesInChannelDto
@@ -121,6 +115,99 @@ namespace Presentations.Controllers
             _unitOfWork.Save();
             _unitOfWork.Commit();
             return Created("CreateChannel", new GetChannelDTO { ChannelId = channel.ChannelId, ChannelName = channel.ChannelName });
+        }
+        [HttpGet("{groupChatId}/{channelId}")]
+        [Authorize(Policy = Permissions.CAN_MANAGE_CHANNELS)]
+        public async Task<IActionResult> GetAllowedRolesByChannelId(int groupChatId, int channelId)
+        {
+            var result = _unitOfWork.AllowedRoles.GetAllowedRolesByChannelId(channelId);
+            return Ok(result);
+        }
+
+        [HttpGet("{groupChatId}/{channelId}")]
+        [Authorize(Policy = Permissions.CAN_MANAGE_CHANNELS)]
+        public async Task<IActionResult> GetAllowedUsersByChannelId(int groupChatId, int channelId)
+        {
+            var result = _unitOfWork.AllowedUsers.GetAllowedUsersByChannelId(channelId);
+            return Ok(result);
+        }
+        [HttpPut("{channelId}")]
+        public async Task<IActionResult> UpdatePrivateChannelPermissions(int channelId, [FromBody] UpdatePrivateChannelPermissionsDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState); // Return bad request if the model is invalid
+            }
+
+            var channel = await _unitOfWork.Channels.GetByIdAsync(channelId);
+            if (channel == null)
+            {
+                return NotFound(); // Return not found if the channel does not exist
+            }
+
+            // Materialize query results by using ToList() to avoid multiple open DataReaders
+            var existingAllowedUsers = _unitOfWork.AllowedUsers.GetAll().Where(x => x.ChannelId == channelId).ToList();
+            var existingAllowedRoles = _unitOfWork.AllowedRoles.GetAll().Where(x => x.ChannelId == channelId).ToList();
+
+            _unitOfWork.BeginTransaction();
+
+            // Update AllowedUsers - Remove users not in DTO
+            foreach (var user in existingAllowedUsers)
+            {
+                if (!model.AllowedUsers.Contains(user.UserId))
+                {
+                    _unitOfWork.AllowedUsers.Delete(user.Id);
+                }
+            }
+
+            // Add new users from DTO
+            foreach (var userId in model.AllowedUsers)
+            {
+                if (!existingAllowedUsers.Any(u => u.UserId == userId))
+                {
+                    var allowedUserDto = new CreateAllowedUserDTO
+                    {
+                        ChannelId = channelId,
+                        UserId = userId
+                    };
+                    var allowedUser = _mapper.Map<AllowedUser>(allowedUserDto);
+                    _unitOfWork.AllowedUsers.Insert(allowedUser);
+                }
+            }
+
+            // Update AllowedRoles - Remove roles not in DTO
+            foreach (var role in existingAllowedRoles)
+            {
+                if (!model.AllowedRoles.Contains(role.RoleId))
+                {
+                    // Fixed: use AllowedRoles repository instead of AllowedUsers
+                    _unitOfWork.AllowedRoles.Delete(role.Id);
+                }
+            }
+
+            // Add new roles from DTO
+            foreach (var roleId in model.AllowedRoles)
+            {
+                if (!existingAllowedRoles.Any(r => r.RoleId == roleId))
+                {
+                    var allowedRoleDto = new CreateAllowedRoleDTO
+                    {
+                        ChannelId = channelId,
+                        RoleId = roleId
+                    };
+                    var allowedRole = _mapper.Map<AllowedRole>(allowedRoleDto);
+                    _unitOfWork.AllowedRoles.Insert(allowedRole);
+                }
+            }
+
+            // Save all changes and commit in one go
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+
+            return Ok(new
+            {
+                Message = "Permissions updated successfully",
+            });
         }
     }
 }

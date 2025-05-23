@@ -1,4 +1,5 @@
 ﻿using DataAccesses.DTOs.GroupChats;
+using DataAccesses.DTOs.PaginationModels;
 using DataAccesses.DTOs.UserGroupChats;
 using DataAccesses.Models;
 
@@ -11,5 +12,6 @@ namespace BusinessLogics.Repositories
         public Task<GroupChat> GetGroupChatByChannelIdAsync(int channelId);
         public Task<IEnumerable<GetGroupChatDTO>> GetJoinedGroupChatPaginationAsync(int userId, int? page, int items);
         public Task<GroupChat> GetGroupChatByInviteCode(string inviteCode);
+        public GroupChats GetGroupChatsPagination(int page, int itemsPerPage, string? keyword);
     }
 }

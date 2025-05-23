@@ -1,5 +1,6 @@
 ﻿using BusinessLogics.Repositories;
 using CloudinaryDotNet.Actions;
+using DataAccesses.DTOs.PaginationModels;
 using DataAccesses.DTOs.Roles;
 using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
@@ -10,7 +11,6 @@ namespace BusinessLogics.RepositoriesImpl
     public class UserRepository : GenericRepository<User>, IUserRepository
     {
         public UserRepository(FakeDiscordContext context) : base(context) { }
-
         public async Task<bool> CheckAccoutExistedAsync(string userName, string password)
         {
             var user = await table.FirstOrDefaultAsync(x => x.UserName == userName && x.Password == password);
@@ -29,10 +29,56 @@ namespace BusinessLogics.RepositoriesImpl
             return user != null;
         }
 
+        public IEnumerable<GetBlockedUserDTO> GetBlockedUsers(int groupChatId)
+        {
+            var result = from gcb in _context.GroupChatBlackLists
+                         join u in table
+                         on gcb.UserId equals u.UserId
+                         select new GetBlockedUserDTO
+                         {
+                             BlackListId = gcb.BlackListId,
+                             UserId = u.UserId,
+                             UserName = u.UserName,
+                             Avatar = u.Avatar
+                         };
+            return result.AsEnumerable();
+        }
+
         public User GetByUsername(string userName)
         {
             var user = table.FirstOrDefault(x => x.UserName == userName);
             return user;
+        }
+
+        public Users GetUsersPagination(int page, int itemsPerPage, string? keyword)
+        {
+            var query = table.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(user => user.UserName.Contains(keyword));
+            }
+
+            var totalItems = query.Count();
+            var users = query
+                .OrderBy(u => u.UserId)
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .Select(user => new UserPaginationDTO
+                {
+                    UserId = user.UserId,
+                    Username = user.UserName,
+                    Avatar = user.Avatar,
+                    DateCreated = user.DateCreated,
+                    Email = user.Email,
+                })
+                .ToList();
+
+            return new Users
+            {
+                Data = users,
+                Pages = (int)Math.Ceiling((double)totalItems / itemsPerPage),
+            };
         }
 
         public IEnumerable<GetUserDTO> GetUsersByRole(int roleId)
@@ -51,6 +97,26 @@ namespace BusinessLogics.RepositoriesImpl
                             Avatar = u.Avatar,
                         };
             return users.AsEnumerable();
+        }
+
+        public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId, int caller)
+        {
+            var users = from u in _context.Users
+                        join
+                        ur in _context.UserRoles
+                        on u.UserId equals ur.UserId
+                        join r in _context.Roles
+                        on ur.RoleId equals r.RoleId
+                        join g in _context.GroupChats
+                        on r.GroupChatId equals g.GroupChatId
+                        where g.GroupChatId == groupChatId && u.UserId != caller
+                        select new GetUserDTO
+                        {
+                            UserId = u.UserId,
+                            UserName = u.UserName,
+                            Avatar = u.Avatar,
+                        };
+            return users.Distinct().AsEnumerable();
         }
 
         public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId)
@@ -106,7 +172,5 @@ namespace BusinessLogics.RepositoriesImpl
 
             return usersWithRoles;
         }
-
-
     }
 }

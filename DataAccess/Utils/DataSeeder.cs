@@ -70,6 +70,17 @@ namespace DataAccesses.Seeds
                 });
                 _context.SaveChanges();
             }
+            if (!_context.SuperAdmins.Any())
+            {
+                _context.SuperAdmins.Add(new SuperAdmin
+                {
+                    Username = "admin",
+                    Password = "admin123", // Replace with a hashed password in production
+                    Email = "bbbvvvv442@gmail.com",
+                    DateCreated = DateTime.Now
+                });
+                _context.SaveChanges();
+            }
         }
     }
 }

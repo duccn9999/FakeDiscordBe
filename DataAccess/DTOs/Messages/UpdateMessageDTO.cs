@@ -6,5 +6,6 @@
         public string Content { get; set; }
         public DateTime? DateModified { get; set; } = DateTime.Now;
         public int ChannelId { get; set; }
+        public List<int>? MentionUsers { get; set; }
     }
 }

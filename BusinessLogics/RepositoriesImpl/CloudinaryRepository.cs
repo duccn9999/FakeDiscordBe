@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace BusinessLogics.RepositoriesImpl
 {
-    public class CloudinaryService : ICloudinaryService
+    public class CloudinaryRepository : ICloudinaryRepository
     {
         private readonly Cloudinary cloudinary;
         const string API_KEY = "vA2g3XJb6DfuY8D5MeZyL4GEybQ";
         const string CLOUDINARY_CONNECT_STRING = $"cloudinary://531895637933677:{API_KEY}@dywexvvcy";
-        public CloudinaryService()
+        public CloudinaryRepository()
         {
             cloudinary = new Cloudinary(CLOUDINARY_CONNECT_STRING);
             cloudinary.Api.Secure = true;

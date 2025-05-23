@@ -26,6 +26,10 @@ namespace BusinessLogics.Repositories
         IMessageAttachmentRepository MessageAttachments { get; }
         IMentionUserRepository MentionUsers { get; }
         ILastSeenMessageRepository LastSeenMessages { get; }
+        IEmailRepository Emails { get; }
+        IEmailTokenRepository EmailTokens { get; }
+        IGroupChatBlackListRepository GroupChatBlackLists { get; }
+        ISuperAdminRepository SuperAdmins { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
+using DataAccesses.DTOs.Channels;
 using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
@@ -30,6 +31,10 @@ namespace BusinessLogics.RepositoriesImpl
         public IMessageAttachmentRepository _messageAttachmentRepository;
         public IMentionUserRepository _mentionUserRepository;
         public ILastSeenMessageRepository _lastSeenMessageRepository;
+        public IEmailRepository _emailRepository;
+        public IEmailTokenRepository _emailTokenRepository;
+        public IGroupChatBlackListRepository _groupChatBlackListRepository;
+        public ISuperAdminRepository _superAdminRepository;
         public UnitOfWork(FakeDiscordContext context, IConfiguration config)
         {
             _context = context;
@@ -56,6 +61,11 @@ namespace BusinessLogics.RepositoriesImpl
 
         public IMentionUserRepository MentionUsers => _mentionUserRepository ??= new MentionUserRepository(_context);
         public ILastSeenMessageRepository LastSeenMessages => _lastSeenMessageRepository ??= new LastSeenMessageRepository(_context);
+        public IEmailRepository Emails => _emailRepository ??= new EmailRepository(_config);
+
+        public IEmailTokenRepository EmailTokens => _emailTokenRepository ??= new EmailTokenRepository(_context);
+        public IGroupChatBlackListRepository GroupChatBlackLists => _groupChatBlackListRepository ??= new GroupChatBlackListRepository(_context);
+        public ISuperAdminRepository SuperAdmins => _superAdminRepository ??= new SuperAdminRepository(_config, _context);
         public void BeginTransaction()
         {
             _transaction = _context.Database.BeginTransaction();

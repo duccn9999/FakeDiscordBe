@@ -118,7 +118,7 @@ namespace BusinessLogics.RepositoriesImpl
                         {
                             UserId = u.UserId,
                             UserName = u.UserName,
-                            Avatar = u.CoverImage
+                            Avatar = u.Avatar
                         };
             return query.ToList();
         }
@@ -134,7 +134,7 @@ namespace BusinessLogics.RepositoriesImpl
                          select new GetUsersNotInRoleDTO
                          {
                              UserId = u.UserId,
-                             CoverImage = u.CoverImage,
+                             CoverImage = u.Avatar,
                              UserName = u.UserName
                          }).Distinct();
             return query.ToList();

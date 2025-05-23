@@ -20,8 +20,8 @@ namespace Presentations.Controllers
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private readonly ICloudinaryService _cloudinaryService;
-        public MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryService cloudinaryService)
+        private readonly ICloudinaryRepository _cloudinaryService;
+        public MessagesController(IUnitOfWork unitOfWork, IMapper mapper, ICloudinaryRepository cloudinaryService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -32,7 +32,15 @@ namespace Presentations.Controllers
         [Authorize(Policy = "VIEW_MESSAGES")]
         public async Task<IActionResult> GetMessage(int channelId)
         {
-            var result = await _unitOfWork.Messages.GetMessagesPaginationByChannelId(channelId);
+            var result = await _unitOfWork.Messages.GetMessagesByChannelId(channelId);
+            return Ok(result);
+        }
+
+        [HttpGet("GetMessagesPagination/{channelId}")]
+        [Authorize(Policy = "VIEW_MESSAGES")]
+        public async Task<IActionResult> GetMessagesPagination(int channelId, int page, int itemsPerPage)
+        {
+            var result = await _unitOfWork.Messages.GetMessagesPaginationByChannelId(channelId, page, itemsPerPage);
             return Ok(result);
         }
         [HttpGet("GetPrivateMessages/{channelId}")]
@@ -128,6 +136,30 @@ namespace Presentations.Controllers
             var message = await _unitOfWork.Messages.GetByIdAsync(model.MessageId);
             _mapper.Map(model, message);
             _unitOfWork.Messages.Update(message);
+            /* update mentions */
+            var mentionUsers = _unitOfWork.MentionUsers.GetAll().Where(x => x.MessageId == model.MessageId);
+            if (mentionUsers != null && mentionUsers.Any())
+            {
+                _unitOfWork.MentionUsers.DeleteRange(mentionUsers.ToList());
+            }
+            if (model.MentionUsers != null && model.MentionUsers.Any())
+            {
+                var mentionUserDtos = new List<CreateMentionUserDTO>();
+                foreach (var userId in model.MentionUsers)
+                {
+                    mentionUserDtos.Add(new CreateMentionUserDTO
+                    {
+                        MessageId = message.MessageId,
+                        UserId = userId
+                    });
+                }
+                if (mentionUserDtos.Any())
+                {
+                    var mentionUsersModel = _mapper.Map<List<MentionUser>>(mentionUserDtos);
+                    _unitOfWork.MentionUsers.InsertRange(mentionUsersModel);
+                    _unitOfWork.Save();
+                }
+            }
             _unitOfWork.Save();
             _unitOfWork.Commit();
             var user = await _unitOfWork.Users.GetByIdAsync(message.UserCreated);

@@ -17,7 +17,7 @@ namespace Presentations.Hubs
             _unitOfWork = unitOfWork;
             _userTracker = userTracker;
         }
-        public async Task OnConnected(string username, GetChannelDTO model)
+        public async Task EnterChannel(string username, GetChannelDTO_Extend model)
         {
             var channel = _unitOfWork.Channels.GetById(model.ChannelId);
             var groupChat = _unitOfWork.GroupChats.GetAll().FirstOrDefault(x => x.GroupChatId == channel.GroupChatId);
@@ -28,6 +28,11 @@ namespace Presentations.Hubs
              */
             var lastSeenMessage = await _userTracker.TrackLastMessage(username, _unitOfWork, model.ChannelId);
             await Clients.Caller.SendAsync("EnterChannel", username, model);
+        }
+
+        public async Task OnConnected(string username)
+        {
+            await Clients.User(username).SendAsync("OnConnected", username);
         }
 
         public async Task<GetLastSeenMessageDTO> OnLeave(string username, GetChannelDTO model)
@@ -62,9 +67,17 @@ namespace Presentations.Hubs
             await Clients.User(username).SendAsync("MarkMentionsAsRead", channelId);
         }
 
-        public async Task SetMentionCount(string username,int channelId, int mentionsCount)
+        public async Task SetMentionCount(string username, int channelId, int mentionsCount)
         {
-            await Clients.User(username).SendAsync("SetMentionCount", new { channelId, mentionsCount});
+            await Clients.Users(username).SendAsync("SetMentionCount", new { channelId, mentionsCount });
+        }
+
+        public async Task AddMentionCount(List<int> userIds, int channelId)
+        {
+            var usernames = _unitOfWork.Users.GetAll()
+                .Where(x => userIds.Contains(x.UserId))
+                .Select(x => x.UserName).ToList();
+            await Clients.Users(usernames).SendAsync("AddMentionCount", channelId);
         }
     }
 }

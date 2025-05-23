@@ -24,26 +24,42 @@ namespace DataAccesses.Migrations
 
             modelBuilder.Entity("DataAccesses.Models.AllowedRole", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<int>("ChannelId")
                         .HasColumnType("int");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
-                    b.HasKey("ChannelId", "RoleId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
 
                     b.ToTable("AllowedRole");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.AllowedUser", b =>
                 {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
                     b.Property<int>("ChannelId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.HasKey("ChannelId", "UserId");
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChannelId");
 
                     b.ToTable("AllowedUser");
                 });
@@ -85,6 +101,28 @@ namespace DataAccesses.Migrations
                     b.ToTable("Channel");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.EmailToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EmailToken");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.GroupChat", b =>
                 {
                     b.Property<int>("GroupChatId")
@@ -107,6 +145,9 @@ namespace DataAccesses.Migrations
                         .HasMaxLength(7)
                         .HasColumnType("nvarchar(7)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -120,6 +161,33 @@ namespace DataAccesses.Migrations
                     b.HasKey("GroupChatId");
 
                     b.ToTable("GroupChat");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.GroupChatBlackList", b =>
+                {
+                    b.Property<int>("BlackListId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("BlackListId"));
+
+                    b.Property<string>("BanReason")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateAdded")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GroupChatId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BlackListId");
+
+                    b.HasIndex("GroupChatId");
+
+                    b.ToTable("GroupChatBlackLists");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.LastSeenMessage", b =>
@@ -428,6 +496,34 @@ namespace DataAccesses.Migrations
                     b.ToTable("RolePermission");
                 });
 
+            modelBuilder.Entity("DataAccesses.Models.SuperAdmin", b =>
+                {
+                    b.Property<int>("SuperAdminId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SuperAdminId"));
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("SuperAdminId");
+
+                    b.ToTable("SuperAdmin");
+                });
+
             modelBuilder.Entity("DataAccesses.Models.User", b =>
                 {
                     b.Property<int>("UserId")
@@ -439,9 +535,6 @@ namespace DataAccesses.Migrations
                     b.Property<string>("Avatar")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CoverImage")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("DateCreated")
                         .HasColumnType("datetime2");
 
@@ -451,6 +544,9 @@ namespace DataAccesses.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -476,8 +572,8 @@ namespace DataAccesses.Migrations
                     b.Property<DateTime>("RequestDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("Status")
-                        .HasColumnType("bit");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId1")
                         .HasColumnType("int");
@@ -538,6 +634,28 @@ namespace DataAccesses.Migrations
                 {
                     b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
                         .WithMany("Channels")
+                        .HasForeignKey("GroupChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("GroupChat");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.EmailToken", b =>
+                {
+                    b.HasOne("DataAccesses.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("DataAccesses.Models.GroupChatBlackList", b =>
+                {
+                    b.HasOne("DataAccesses.Models.GroupChat", "GroupChat")
+                        .WithMany("GroupChatBlackLists")
                         .HasForeignKey("GroupChatId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -694,6 +812,8 @@ namespace DataAccesses.Migrations
             modelBuilder.Entity("DataAccesses.Models.GroupChat", b =>
                 {
                     b.Navigation("Channels");
+
+                    b.Navigation("GroupChatBlackLists");
 
                     b.Navigation("Roles");
                 });

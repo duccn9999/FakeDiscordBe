@@ -9,7 +9,10 @@ namespace DataAccesses.Profiles
         public UserProfile()
         {
             CreateMap<CreateUserDTO, User>();
-            CreateMap<UpdateUserDTO, User>();
+            CreateMap<ChangeEmailDTO, User>();
+            CreateMap<ChangeUsernameDTO, User>();
+            CreateMap<ChangePasswordDTO, User>();
+            CreateMap<ChangeAvatarDTO, User>();
             CreateMap<User, LoginUserDTO>();
         }
     }

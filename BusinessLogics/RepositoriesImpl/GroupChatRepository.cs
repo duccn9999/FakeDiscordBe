@@ -1,5 +1,6 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.GroupChats;
+using DataAccesses.DTOs.PaginationModels;
 using DataAccesses.DTOs.UserGroupChats;
 using DataAccesses.Models;
 using DataAccesses.Utils;
@@ -40,7 +41,7 @@ namespace BusinessLogics.RepositoriesImpl
 
         public async Task<GetGroupChatDTO> GetGroupChatByIdAsync(int groupChatId)
         {
-            var groupChat = await _context.GroupChats.FindAsync(groupChatId);
+            var groupChat = await table.FindAsync(groupChatId);
             var result = new GetGroupChatDTO
             {
                 GroupChatId = groupChat.GroupChatId,
@@ -66,6 +67,38 @@ namespace BusinessLogics.RepositoriesImpl
         {
             var result = await _context.GroupChats.FirstOrDefaultAsync(x => x.InviteCode == inviteCode);
             return result;
+        }
+
+        public GroupChats GetGroupChatsPagination(int page, int itemsPerPage, string? keyword)
+        {
+            var query = table.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query.Where(groupChat => groupChat.Name.Contains(keyword));
+            }
+
+            var totalItems = query.Count();
+            var groupChats = query
+                .OrderBy(g => g.GroupChatId)
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .Select(groupChat => new GroupChatPaginationDTO
+                {
+                    GroupChatId = groupChat.GroupChatId,
+                    Name = groupChat.Name,
+                    CoverImage = groupChat.CoverImage,
+                    DateCreated = groupChat.DateCreated,
+                    UserCreated = groupChat.UserCreated,
+                    IsActive = groupChat.IsActive
+                })
+                .ToList();
+
+            return new GroupChats
+            {
+                Data = groupChats,
+                Pages = (int)Math.Ceiling((double)totalItems / itemsPerPage),
+            };
         }
     }
 }

@@ -17,7 +17,9 @@ namespace DataAccesses.Models
         public DateTime? DateModified { get; set; }
         public int UserCreated { get; set; }
         public int? UserModified { get; set; }
+        public bool IsActive { get; set; }
         public IEnumerable<Channel>? Channels { get; set; }
         public IEnumerable<Role>? Roles { get; set; }
+        public IEnumerable<GroupChatBlackList>? GroupChatBlackLists { get; set; }
     }
 }

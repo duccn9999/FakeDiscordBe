@@ -9,14 +9,16 @@ namespace BusinessLogics.RepositoriesImpl
     public class MessageRepository : GenericRepository<Message>, IMessageRepository
     {
         public MessageRepository(FakeDiscordContext context) : base(context) { }
-        public async Task<IEnumerable<GetMessageDTO>> GetMessagesPaginationByChannelId(int channelId)
+
+        public async Task<IEnumerable<GetMessageDTO>> GetMessagesByChannelId(int channelId)
         {
             var result = from m in _context.Messages
                          join c in _context.Channels
                          on m.ChannelId equals c.ChannelId
                          join u in _context.Users
                          on m.UserCreated equals u.UserId
-                         where c.ChannelId == channelId orderby m.DateCreated ascending
+                         where c.ChannelId == channelId
+                         orderby m.DateCreated ascending
                          select new GetMessageDTO
                          {
                              MessageId = m.MessageId,
@@ -38,6 +40,41 @@ namespace BusinessLogics.RepositoriesImpl
                              }).ToList(),
                          };
             return result.AsEnumerable();
+        }
+
+        public async Task<IEnumerable<GetMessageDTO>> GetMessagesPaginationByChannelId(int channelId, int page, int itemsPerPage)
+        {
+            var result = from m in _context.Messages
+                         join c in _context.Channels
+                         on m.ChannelId equals c.ChannelId
+                         join u in _context.Users
+                         on m.UserCreated equals u.UserId
+                         where c.ChannelId == channelId orderby m.DateCreated descending
+                         select new GetMessageDTO
+                         {
+                             MessageId = m.MessageId,
+                             Username = u.UserName,
+                             Avatar = u.Avatar,
+                             Content = m.Content,
+                             DateCreated = m.DateCreated.ToString("yyyy-MM-dd HH:mm"),
+                             DateModified = m.DateModified,
+                             ChannelId = m.ChannelId,
+                             Attachments = m.Attachments.Select(i => new GetMessageAttachmentDTO
+                             {
+                                 AttachmentId = i.AttachmentId,
+                                 Url = i.Url,
+                                 MessageId = i.MessageId,
+                                 ContentType = i.ContentType,
+                                 DisplayName = i.DisplayName,
+                                 PublicId = i.PublicId,
+                                 DownloadLink = i.DownloadLink,
+                             }).ToList(),
+                         };
+            return result
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .AsEnumerable()
+                .Reverse(); // Reverse AFTER pagination
         }
 
         public async Task<IEnumerable<GetMessageDTO>> GetMessagesPaginationByPrivateChannelId(int channelId)

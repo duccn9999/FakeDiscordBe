@@ -3,6 +3,7 @@ using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Notifications;
 using DataAccesses.DTOs.UserFriends;
 using DataAccesses.Models;
+using DataAccesses.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol.Plugins;
@@ -31,6 +32,12 @@ namespace Presentations.Controllers
             return Ok(_unitOfWork.UserFriends.GetFriendsByUser(userId));
         }
 
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetBlockedUser(int userId)
+        {
+            return Ok(_unitOfWork.UserFriends.GetBlockedUsers(userId));
+        }
+
         // POST api/<UserFriendsController>
         [HttpPost]
         public async Task<IActionResult> SendFriendRequest([FromBody] SendFriendRequestDTO model)
@@ -43,17 +50,20 @@ namespace Presentations.Controllers
             var receiver = _unitOfWork.Users.GetByUsername(model.Receiver);
             var sender = _unitOfWork.Users.GetById(model.UserId1);
             var existUserFriend = _unitOfWork.UserFriends.GetAll().SingleOrDefault(x => x.UserId1 == Math.Min(receiver.UserId, model.UserId1) && x.UserId2 == Math.Max(receiver.UserId, model.UserId1));
-            if (existUserFriend != null)
+            if (existUserFriend != null && existUserFriend.Status == (int)FriendStatus.Accepted)
             {
                 return Conflict($"You and {receiver.UserName} has already been friend!");
-            }
-            var userFriend = new UserFriend
+            }else if (existUserFriend != null && existUserFriend.Status == (int)FriendStatus.Blocked)
             {
-                UserId1 = Math.Min(model.UserId1, receiver.UserId),
-                UserId2 = Math.Max(model.UserId1, receiver.UserId),
-                Status = model.Status,
-                RequestDate = DateTime.UtcNow
-            };
+
+            }
+                var userFriend = new UserFriend
+                {
+                    UserId1 = Math.Min(model.UserId1, receiver.UserId),
+                    UserId2 = Math.Max(model.UserId1, receiver.UserId),
+                    Status = model.Status,
+                    RequestDate = DateTime.UtcNow
+                };
             _unitOfWork.UserFriends.Insert(userFriend);
             _unitOfWork.Save();
             /* send notification */
@@ -151,6 +161,87 @@ namespace Presentations.Controllers
                 Type = notification.Type,
                 DateCreated = notification.DateCreated
             });
+        }
+
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> BlockUser(int id)
+        {
+            var userFriend = _unitOfWork.UserFriends.GetById(id);
+            var user = _unitOfWork.Users.GetById(userFriend.UserId2);
+            if (userFriend == null)
+            {
+                return NotFound();
+            }
+            var responseModel = new GetUserFriendDTO
+            {
+                Id = userFriend.Id,
+                Avatar = user.Avatar,
+                UserName = user.UserName,
+                RequestDate = userFriend.RequestDate,
+                Status = userFriend.Status,
+                UserId1 = userFriend.UserId1,
+                UserId2 = userFriend.UserId2,
+            };
+            _unitOfWork.BeginTransaction();
+            userFriend.Status = (int)FriendStatus.Blocked;
+            _unitOfWork.UserFriends.Update(userFriend);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(responseModel);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Unfriend(int id)
+        {
+            var userFriend = _unitOfWork.UserFriends.GetById(id);
+            var user = _unitOfWork.Users.GetById(userFriend.UserId2);
+            if (userFriend == null)
+            {
+                return NotFound();
+            }
+            var responseModel = new GetUserFriendDTO
+            {
+                Id = userFriend.Id,
+                Avatar = user.Avatar,
+                UserName = user.UserName,
+                RequestDate = userFriend.RequestDate,
+                Status = userFriend.Status,
+                UserId1 = userFriend.UserId1,
+                UserId2 = userFriend.UserId2,
+            };
+            _unitOfWork.BeginTransaction();
+            _unitOfWork.UserFriends.Delete(id);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(responseModel);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> UnblockUser(int id)
+        {
+            var userFriend = _unitOfWork.UserFriends.GetById(id);
+            var user = _unitOfWork.Users.GetById(userFriend.UserId2);
+            if (userFriend == null)
+            {
+                return NotFound();
+            }
+            var responseModel = new GetUserFriendDTO
+            {
+                Id = userFriend.Id,
+                Avatar = user.Avatar,
+                UserName = user.UserName,
+                RequestDate = userFriend.RequestDate,
+                Status = userFriend.Status,
+                UserId1 = userFriend.UserId1,
+                UserId2 = userFriend.UserId2,
+            };
+            _unitOfWork.BeginTransaction();
+            userFriend.Status = (int)FriendStatus.Accepted;
+            _unitOfWork.UserFriends.Update(userFriend);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(responseModel);
         }
     }
 }

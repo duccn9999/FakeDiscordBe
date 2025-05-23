@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Newtonsoft.Json;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Channels;
 
 namespace Presentations.AuthorizationHandler.RequiredPermission
 {
@@ -80,6 +81,12 @@ namespace Presentations.AuthorizationHandler.RequiredPermission
                 {
                     return await GetGroupChatIdFromRoleId(parsedRoleId);
                 }
+
+                // Check for roleId and get associated groupChatId
+                if (TryParseRouteValue(routeData.Values, "channelId", out var parsedChannelId))
+                {
+                    return await GetGroupChatIdFromChannelId(parsedChannelId);
+                }
             }
 
             // For GET/DELETE requests, check query string
@@ -89,6 +96,12 @@ namespace Presentations.AuthorizationHandler.RequiredPermission
                     int.TryParse(groupChatIdStr, out var groupChatId))
                 {
                     return groupChatId;
+                }
+
+                if (httpContext.Request.Query.TryGetValue("channelId", out var channelIdStr) &&
+                int.TryParse(groupChatIdStr, out var channelId))
+                {
+                    return await GetGroupChatIdFromChannelId(channelId);
                 }
             }
             // For POST/PUT requests, check form and body
