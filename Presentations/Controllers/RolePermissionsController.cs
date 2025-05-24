@@ -2,6 +2,7 @@
 using BusinessLogics.Repositories;
 using DataAccesses.DTOs.RolePermissions;
 using DataAccesses.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections;
 
@@ -11,6 +12,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]")]
     [ApiController]
+    [Authorize(Policy = "CHECK_ACTIVE")]
     public class RolePermissionsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

@@ -14,6 +14,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]/[action]")]
     [ApiController]
+    [Authorize(Policy = "CHECK_ACTIVE")]
     public class ChannelsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

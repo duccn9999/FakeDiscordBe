@@ -17,7 +17,7 @@ namespace BusinessLogics.RepositoriesImpl
                          on m.ChannelId equals c.ChannelId
                          join u in _context.Users
                          on m.UserCreated equals u.UserId
-                         where c.ChannelId == channelId
+                         where c.ChannelId == channelId && u.IsActive
                          orderby m.DateCreated ascending
                          select new GetMessageDTO
                          {
@@ -49,7 +49,8 @@ namespace BusinessLogics.RepositoriesImpl
                          on m.ChannelId equals c.ChannelId
                          join u in _context.Users
                          on m.UserCreated equals u.UserId
-                         where c.ChannelId == channelId orderby m.DateCreated descending
+                         where c.ChannelId == channelId && u.IsActive
+                         orderby m.DateCreated descending
                          select new GetMessageDTO
                          {
                              MessageId = m.MessageId,
@@ -84,7 +85,7 @@ namespace BusinessLogics.RepositoriesImpl
                          on m.ChannelId equals c.ChannelId
                          join u in _context.Users
                          on m.UserCreated equals u.UserId
-                         where c.ChannelId == channelId
+                         where c.ChannelId == channelId && u.IsActive
                          orderby m.DateCreated ascending
                          select new GetMessageDTO
                          {
@@ -123,7 +124,7 @@ namespace BusinessLogics.RepositoriesImpl
             var query2 = from u in _context.Users
                          join ur in _context.UserRoles on u.UserId equals ur.UserId
                          join r in _context.Roles on ur.RoleId equals r.RoleId
-                         where r.GroupChatId == groupChatId &&
+                         where r.GroupChatId == groupChatId && u.IsActive &&
                                (r.RoleName.Equals(keyword, StringComparison.OrdinalIgnoreCase) ||
                                 u.UserName.Equals(keyword, StringComparison.OrdinalIgnoreCase))
                          select new GetTagKeywordDTO

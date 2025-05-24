@@ -1,7 +1,4 @@
-﻿using DataAccesses.DTOs.GroupChats;
-using System.ComponentModel.DataAnnotations;
-
-namespace DataAccesses.DTOs.PaginationModels
+﻿namespace DataAccesses.DTOs.PaginationModels
 {
     public class GroupChatPaginationDTO
     {
@@ -9,12 +6,12 @@ namespace DataAccesses.DTOs.PaginationModels
         public string Name { get; set; }
         public string? CoverImage { get; set; }
         public DateTime DateCreated { get; set; }
-        public int UserCreated { get; set; }
+        public string UserCreated { get; set; }
         public bool IsActive { get; set; }
     }
     public class GroupChats
     {
-        public List<GroupChatPaginationDTO> Data;
-        public int Pages;
+        public List<GroupChatPaginationDTO> Data { get; set; }
+        public int Pages { get; set; }
     }
 }

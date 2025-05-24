@@ -39,7 +39,7 @@ namespace BusinessLogics.RepositoriesImpl
                         join u in _context.Users
                         on ur.UserId equals u.UserId
                         into uGroup
-                        from u in uGroup.DefaultIfEmpty()
+                        from u in uGroup.DefaultIfEmpty() where u.IsActive == true
                         group u by new { r.RoleId, r.RoleName, r.GroupChatId } into grouped
                         where grouped.Key.GroupChatId == groupChatId && (grouped.Key.RoleName != RolesSeed.ADMINISTRATOR_ROLE && grouped.Key.RoleName != RolesSeed.MEMBER_ROLE)
                         select new GetNumberOfUserByEachRoleDTO
@@ -97,7 +97,7 @@ namespace BusinessLogics.RepositoriesImpl
                         on r.RoleId equals ur.RoleId
                         join u in _context.Users
                         on ur.UserId equals u.UserId
-                        where r.RoleId == roleId && r.GroupChatId == groupChatId
+                        where r.RoleId == roleId && r.GroupChatId == groupChatId && u.IsActive
                         select new GetUsersByEachRoleDTO
                         {
                             UserId = u.UserId,
@@ -113,7 +113,7 @@ namespace BusinessLogics.RepositoriesImpl
         {
             var query = from ur in _context.UserRoles
                         join u in _context.Users on ur.UserId equals u.UserId
-                        where ur.RoleId == roleId
+                        where ur.RoleId == roleId && u.IsActive
                         select new GetUserDTO
                         {
                             UserId = u.UserId,
@@ -130,7 +130,7 @@ namespace BusinessLogics.RepositoriesImpl
                          from ur in urGroup.DefaultIfEmpty()
                          join u in _context.Users on ur.UserId equals u.UserId into uGroup
                          from u in uGroup.DefaultIfEmpty()
-                         where r.GroupChatId == groupChatId && (ur != null && ur.RoleId != roleId)
+                         where r.GroupChatId == groupChatId && (ur != null && ur.RoleId != roleId) && u.IsActive
                          select new GetUsersNotInRoleDTO
                          {
                              UserId = u.UserId,

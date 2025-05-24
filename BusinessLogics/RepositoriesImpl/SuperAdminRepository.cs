@@ -15,7 +15,7 @@ namespace BusinessLogics.RepositoriesImpl
         private readonly IConfiguration _config;
         public SuperAdminRepository(IConfiguration config, FakeDiscordContext context) : base(context)
         {
-            
+            _config = config;
         }
 
         public string GenerateJSONWebToken(LoginAdminDTO model)

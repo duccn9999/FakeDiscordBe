@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -8,6 +9,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]/[action]")]
     [ApiController]
+    [Authorize(Policy = "CHECK_ACTIVE")]
     public class PermissionsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

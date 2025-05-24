@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Notifications;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -9,6 +10,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]/[action]")]
     [ApiController]
+    [Authorize(Policy = "CHECK_ACTIVE")]
     public class NotificationsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

@@ -14,12 +14,10 @@ namespace BusinessLogics.RepositoriesImpl
     {
         private readonly IConfiguration _config;
         private readonly IUserRepository _users;
-        private readonly IUserRoleRepository _userRoles;
-        public AuthenticationRepository(IUserRepository users, IConfiguration config, IUserRoleRepository userRoles)
+        public AuthenticationRepository(IUserRepository users, IConfiguration config)
         {
             _users = users;
             _config = config;
-            _userRoles = userRoles;
         }
         public string GenerateJSONWebToken(LoginUserDTO model)
         {

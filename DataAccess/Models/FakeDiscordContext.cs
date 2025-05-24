@@ -28,6 +28,9 @@ namespace DataAccesses.Models
         public DbSet<EmailToken> EmailTokens { get; set; }
         public DbSet<GroupChatBlackList> GroupChatBlackLists { get; set; }
         public DbSet<SuperAdmin> SuperAdmins { get; set; }
+        public DbSet<SuspendUser> SuspendUsers { get; set; }
+        public DbSet<SuspendGroupChat> SuspendGroupChats { get; set; }
+        public DbSet<SystemNotification> SystemNotifications { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserRole>()

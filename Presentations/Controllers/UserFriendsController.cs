@@ -15,7 +15,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]/[action]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "CHECK_ACTIVE")]
     public class UserFriendsController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

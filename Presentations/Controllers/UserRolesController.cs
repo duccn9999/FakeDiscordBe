@@ -12,7 +12,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]/[action]")]
     [ApiController]
-    [Authorize(Policy = Permissions.CAN_MANAGE_ROLES)]
+    [Authorize(Policy = Permissions.CAN_MANAGE_ROLES), Authorize(Policy = "CHECK_ACTIVE")]
     public class UserRolesController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

@@ -18,6 +18,8 @@ namespace BusinessLogics.Repositories
         public IEnumerable<GetUserDTO> GetUsersByRole(int roleId);
         public IEnumerable<GetBlockedUserDTO> GetBlockedUsers(int groupChatId);
         /* ADMIN DASHBOARD*/
-        public Users GetUsersPagination(int page, int itemsPerPage, string? keyword);
+        public Task<Users> GetUsersPagination(int page, int itemsPerPage, string? keyword);
+        public Task<int> GetTotalUsers();
+        public Task<int> GetUserCreatedToday();
     }
 }

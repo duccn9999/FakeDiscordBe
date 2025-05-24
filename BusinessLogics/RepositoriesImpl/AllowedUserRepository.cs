@@ -15,7 +15,7 @@ namespace BusinessLogics.RepositoriesImpl
             var result = (
                 from au in _context.AllowedUsers
                 join u in _context.Users on au.UserId equals u.UserId
-                where au.ChannelId == channelId
+                where au.ChannelId == channelId && u.IsActive
                 select u.UserId
             );
             return result.AsEnumerable();

@@ -4,6 +4,7 @@ using DataAccesses.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DataAccesses.Migrations
 {
     [DbContext(typeof(FakeDiscordContext))]
-    partial class FakeDiscordContextModelSnapshot : ModelSnapshot
+    [Migration("20250524033205_AddSuspendUsers")]
+    partial class AddSuspendUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -524,33 +527,6 @@ namespace DataAccesses.Migrations
                     b.ToTable("SuperAdmin");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.SuspendGroupChat", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("DateSuspend")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("GroupChatId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SuperAdminId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SuspendReason")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SuperAdminId");
-
-                    b.ToTable("SuspendGroupChat");
-                });
-
             modelBuilder.Entity("DataAccesses.Models.SuspendUser", b =>
                 {
                     b.Property<int>("Id")
@@ -575,35 +551,7 @@ namespace DataAccesses.Migrations
 
                     b.HasIndex("SuperAdminId");
 
-                    b.ToTable("SuspendUser");
-                });
-
-            modelBuilder.Entity("DataAccesses.Models.SystemNotification", b =>
-                {
-                    b.Property<int>("SystemNotificationId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SystemNotificationId"));
-
-                    b.Property<string>("Content")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("DateCreated")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("SystemNotificationId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("SystemNotification");
+                    b.ToTable("SuspenUser");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.User", b =>
@@ -852,17 +800,6 @@ namespace DataAccesses.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("DataAccesses.Models.SuspendGroupChat", b =>
-                {
-                    b.HasOne("DataAccesses.Models.SuperAdmin", "SuperAdmin")
-                        .WithMany()
-                        .HasForeignKey("SuperAdminId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SuperAdmin");
-                });
-
             modelBuilder.Entity("DataAccesses.Models.SuspendUser", b =>
                 {
                     b.HasOne("DataAccesses.Models.SuperAdmin", "SuperAdmin")
@@ -872,17 +809,6 @@ namespace DataAccesses.Migrations
                         .IsRequired();
 
                     b.Navigation("SuperAdmin");
-                });
-
-            modelBuilder.Entity("DataAccesses.Models.SystemNotification", b =>
-                {
-                    b.HasOne("DataAccesses.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("DataAccesses.Models.UserFriend", b =>

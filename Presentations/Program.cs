@@ -15,6 +15,7 @@ using DataAccesses.Utils;
 using Microsoft.AspNetCore.Authorization;
 using Presentations.AuthorizationHandler.RequiredPermission;
 using Presentations.AuthorizationHandler.AllowedIds;
+using Presentations.AuthorizationHandler.IsUserActive;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
@@ -38,7 +39,7 @@ builder.Services.AddSwaggerGen(c =>
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-            {
+    {
         {
             new OpenApiSecurityScheme
             {
@@ -53,7 +54,7 @@ builder.Services.AddSwaggerGen(c =>
             },
             new List<string>()
         }
-            });
+    });
 });
 
 
@@ -106,6 +107,9 @@ builder.Services.AddAuthorization(options =>
 
     options.AddPolicy("VIEW_MESSAGES", policy =>
     policy.Requirements.Add(new PrivateChannelsAllowersRequirement()));
+
+    options.AddPolicy("CHECK_ACTIVE", policy =>
+    policy.Requirements.Add(new CheckUserActiveRequirement()));
 });
 
 builder.Services.AddTransient<IAuthorizationHandler, RequiredPermissionHandler>();
@@ -131,6 +135,7 @@ builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<ICloudinaryRepository, CloudinaryRepository>();
 builder.Services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
 builder.Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
+builder.Services.AddScoped<ISuperAdminRepository, SuperAdminRepository>();
 builder.Services.AddTransient<IEmailRepository, EmailRepository>();
 builder.Services.AddSingleton<IUserIdProvider, UserIdProvider>();
 builder.Services.AddSingleton<UserTracker>();

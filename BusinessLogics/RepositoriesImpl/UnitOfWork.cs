@@ -35,6 +35,8 @@ namespace BusinessLogics.RepositoriesImpl
         public IEmailTokenRepository _emailTokenRepository;
         public IGroupChatBlackListRepository _groupChatBlackListRepository;
         public ISuperAdminRepository _superAdminRepository;
+        public ISuspendUserRepository _suspendUserRepository;
+        public ISuspendGroupChatRepository _suspendGroupChatRepository;
         public UnitOfWork(FakeDiscordContext context, IConfiguration config)
         {
             _context = context;
@@ -44,7 +46,7 @@ namespace BusinessLogics.RepositoriesImpl
         public IUserRepository Users => _userRepository ??= new UserRepository(_context);
         public IPrivateMessageRepository PrivateMsges => _privateMessageRepository ??= new PrivateMessageRepository(_context);
         public IUserRoleRepository UserRoles => _userRoles ??= new UserRoleRepository(_context);
-        public IAuthenticationRepository Authentication => _authenticationRepository ??= new AuthenticationRepository(Users, _config, UserRoles);
+        public IAuthenticationRepository Authentication => _authenticationRepository ??= new AuthenticationRepository(Users, _config);
         public IGroupChatRepository GroupChats => _groupChatRepository ??= new GroupChatRepository(_context);
         public IChannelRepository Channels => _channelRepository ??= new ChannelRepository(_context);
         public IMessageRepository Messages => _messageRepository ??= new MessageRepository(_context);
@@ -66,6 +68,8 @@ namespace BusinessLogics.RepositoriesImpl
         public IEmailTokenRepository EmailTokens => _emailTokenRepository ??= new EmailTokenRepository(_context);
         public IGroupChatBlackListRepository GroupChatBlackLists => _groupChatBlackListRepository ??= new GroupChatBlackListRepository(_context);
         public ISuperAdminRepository SuperAdmins => _superAdminRepository ??= new SuperAdminRepository(_config, _context);
+        public ISuspendUserRepository SuspendUsers => _suspendUserRepository ??= new SuspendUserRepository(_context);
+        public ISuspendGroupChatRepository SuspendGroupChats => _suspendGroupChatRepository ??= new SuspendGroupChatRepository(_context);
         public void BeginTransaction()
         {
             _transaction = _context.Database.BeginTransaction();

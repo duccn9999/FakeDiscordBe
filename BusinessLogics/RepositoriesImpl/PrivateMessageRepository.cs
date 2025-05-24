@@ -14,7 +14,7 @@ namespace BusinessLogics.RepositoriesImpl
             var result = from privateMessage in table
                          join user in _context.Users on privateMessage.UserId equals user.UserId
                          where( privateMessage.UserId == userId && privateMessage.Receiver == receiver ) || 
-                         (privateMessage.UserId == receiver && privateMessage.Receiver == userId)
+                         (privateMessage.UserId == receiver && privateMessage.Receiver == userId) && user.IsActive
                          select new GetPrivateMessageDTO
                          {
                              MessageId = privateMessage.MessageId,

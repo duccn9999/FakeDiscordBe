@@ -12,7 +12,7 @@ namespace Presentations.Controllers
 {
     [Route("[controller]/[action]")]
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "CHECK_ACTIVE")]
     public class PrivateMessagesController : ControllerBase
     {
         private readonly IUnitOfWork _unitOfWork;

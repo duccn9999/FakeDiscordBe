@@ -18,7 +18,7 @@ namespace BusinessLogics.RepositoriesImpl
                                join r in _context.Roles on ur.RoleId equals r.RoleId
                                join rp in _context.RolePermissions on r.RoleId equals rp.RoleId
                                join p in _context.Permissions on rp.PermissionId equals p.PermissionId
-                               where r.GroupChatId == groupChatId && u.UserId == userId
+                               where r.GroupChatId == groupChatId && u.UserId == userId && u.IsActive
                                select p.Value)
                               .Distinct().AsEnumerable();
             return permissions;

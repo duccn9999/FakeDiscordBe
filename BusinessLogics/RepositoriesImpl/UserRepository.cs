@@ -50,17 +50,17 @@ namespace BusinessLogics.RepositoriesImpl
             return user;
         }
 
-        public Users GetUsersPagination(int page, int itemsPerPage, string? keyword)
+        public async Task<Users> GetUsersPagination(int page, int itemsPerPage, string? keyword)
         {
             var query = table.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(keyword))
             {
-                query = query.Where(user => user.UserName.Contains(keyword));
+                query = query.Where(user => user.UserName.Contains(keyword) || user.Email.Contains(keyword));
             }
 
-            var totalItems = query.Count();
-            var users = query
+            var totalItems = await query.CountAsync(); // Await the Task<int> to get the actual count
+            var users = await query
                 .OrderBy(u => u.UserId)
                 .Skip((page - 1) * itemsPerPage)
                 .Take(itemsPerPage)
@@ -71,8 +71,9 @@ namespace BusinessLogics.RepositoriesImpl
                     Avatar = user.Avatar,
                     DateCreated = user.DateCreated,
                     Email = user.Email,
+                    IsActive = user.IsActive
                 })
-                .ToList();
+                .ToListAsync();
 
             return new Users
             {
@@ -109,7 +110,7 @@ namespace BusinessLogics.RepositoriesImpl
                         on ur.RoleId equals r.RoleId
                         join g in _context.GroupChats
                         on r.GroupChatId equals g.GroupChatId
-                        where g.GroupChatId == groupChatId && u.UserId != caller
+                        where g.GroupChatId == groupChatId && u.UserId != caller && u.IsActive
                         select new GetUserDTO
                         {
                             UserId = u.UserId,
@@ -129,7 +130,7 @@ namespace BusinessLogics.RepositoriesImpl
                         on ur.RoleId equals r.RoleId
                         join g in _context.GroupChats
                         on r.GroupChatId equals g.GroupChatId
-                        where g.GroupChatId == groupChatId
+                        where g.GroupChatId == groupChatId && u.IsActive
                         select new GetUserDTO
                         {
                             UserId = u.UserId,
@@ -144,7 +145,7 @@ namespace BusinessLogics.RepositoriesImpl
             var usersWithRoles = (from u in _context.Users
                                   join ur in _context.UserRoles on u.UserId equals ur.UserId
                                   join r in _context.Roles on ur.RoleId equals r.RoleId
-                                  where r.GroupChatId == groupChatId
+                                  where r.GroupChatId == groupChatId && u.IsActive
                                   select new
                                   {
                                       u.UserId,
@@ -171,6 +172,17 @@ namespace BusinessLogics.RepositoriesImpl
                                  .ToList();
 
             return usersWithRoles;
+        }
+
+        public async Task<int> GetTotalUsers()
+        {
+            return await _context.Users.CountAsync();
+        }
+
+        public async Task<int> GetUserCreatedToday()
+        {
+            var today = DateTime.UtcNow.Date;
+            return await _context.Users.CountAsync(u => u.DateCreated.Date == today);
         }
     }
 }

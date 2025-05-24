@@ -11,7 +11,7 @@
     }
     public class Users
     {
-        public List<UserPaginationDTO> Data;
-        public int Pages;
+        public List<UserPaginationDTO> Data { get; set; }
+        public int Pages { get; set; }
     }
 }

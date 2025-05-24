@@ -30,6 +30,8 @@ namespace BusinessLogics.Repositories
         IEmailTokenRepository EmailTokens { get; }
         IGroupChatBlackListRepository GroupChatBlackLists { get; }
         ISuperAdminRepository SuperAdmins { get; }
+        ISuspendUserRepository SuspendUsers { get; }
+        ISuspendGroupChatRepository SuspendGroupChats { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();

@@ -19,7 +19,7 @@ namespace BusinessLogics.RepositoriesImpl
                          on ur.RoleId equals r.RoleId
                          join g in _context.GroupChats
                          on r.GroupChatId equals g.GroupChatId
-                         where u.UserId == userId && r.RoleName == RolesSeed.MEMBER_ROLE
+                         where u.IsActive && u.UserId == userId && r.RoleName == RolesSeed.MEMBER_ROLE
                          select new GetGroupChatDTO
                          {
                              GroupChatId = g.GroupChatId,
@@ -89,7 +89,7 @@ namespace BusinessLogics.RepositoriesImpl
                     Name = groupChat.Name,
                     CoverImage = groupChat.CoverImage,
                     DateCreated = groupChat.DateCreated,
-                    UserCreated = groupChat.UserCreated,
+                    UserCreated = _context.Users.Find(groupChat.UserCreated).UserName ?? "N/A", // Fix for CS8602
                     IsActive = groupChat.IsActive
                 })
                 .ToList();
