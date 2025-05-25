@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authorization;
 using Presentations.AuthorizationHandler.RequiredPermission;
 using Presentations.AuthorizationHandler.AllowedIds;
 using Presentations.AuthorizationHandler.IsUserActive;
+using Presentations.AuthorizationHandler.CheckUserActive;
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
@@ -114,6 +115,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddTransient<IAuthorizationHandler, RequiredPermissionHandler>();
 builder.Services.AddTransient<IAuthorizationHandler, PrivateChannelsAllowersHandler>();
+builder.Services.AddTransient<IAuthorizationHandler, CheckUserActiveHandler>();
 builder.Services.AddHttpContextAccessor();
 // CORS
 builder.Services.AddCors(options =>

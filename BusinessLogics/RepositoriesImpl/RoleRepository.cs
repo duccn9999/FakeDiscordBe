@@ -21,7 +21,7 @@ namespace BusinessLogics.RepositoriesImpl
             var result = from r in _context.Roles
                          join g in _context.GroupChats
                          on r.GroupChatId equals g.GroupChatId
-                         where g.GroupChatId == groupChatId
+                         where g.GroupChatId == groupChatId && g.IsActive
                          select new GetRoleDTO
                          {
                              RoleId = r.RoleId,

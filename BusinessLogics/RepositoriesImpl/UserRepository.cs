@@ -110,7 +110,7 @@ namespace BusinessLogics.RepositoriesImpl
                         on ur.RoleId equals r.RoleId
                         join g in _context.GroupChats
                         on r.GroupChatId equals g.GroupChatId
-                        where g.GroupChatId == groupChatId && u.UserId != caller && u.IsActive
+                        where g.GroupChatId == groupChatId && u.UserId != caller && u.IsActive && g.IsActive
                         select new GetUserDTO
                         {
                             UserId = u.UserId,
@@ -130,7 +130,7 @@ namespace BusinessLogics.RepositoriesImpl
                         on ur.RoleId equals r.RoleId
                         join g in _context.GroupChats
                         on r.GroupChatId equals g.GroupChatId
-                        where g.GroupChatId == groupChatId && u.IsActive
+                        where g.GroupChatId == groupChatId && u.IsActive && g.IsActive
                         select new GetUserDTO
                         {
                             UserId = u.UserId,
@@ -145,7 +145,8 @@ namespace BusinessLogics.RepositoriesImpl
             var usersWithRoles = (from u in _context.Users
                                   join ur in _context.UserRoles on u.UserId equals ur.UserId
                                   join r in _context.Roles on ur.RoleId equals r.RoleId
-                                  where r.GroupChatId == groupChatId && u.IsActive
+                                  join g in _context.GroupChats on r.GroupChatId equals g.GroupChatId
+                                  where r.GroupChatId == groupChatId && u.IsActive && g.IsActive
                                   select new
                                   {
                                       u.UserId,

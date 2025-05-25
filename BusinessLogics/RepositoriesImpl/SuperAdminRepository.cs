@@ -24,7 +24,7 @@ namespace BusinessLogics.RepositoriesImpl
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
             var admin = table.FirstOrDefault(x => x.Username == model.UserName);
             var claims = new List<Claim> {
-                new("adminId", admin.SuperAdminId.ToString()),
+                new("superAdminId", admin.SuperAdminId.ToString()),
                 new("username", admin.Username),
                 new("password", admin.Password),
                 new("email", admin.Email),

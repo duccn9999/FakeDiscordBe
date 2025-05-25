@@ -1,12 +1,7 @@
 ﻿using BusinessLogics.Repositories;
-using DataAccesses.DTOs.UserRoles;
-using DataAccesses.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.CodeAnalysis.FlowAnalysis.DataFlow;
 using Newtonsoft.Json;
-using System.Security.Claims;
 using System.Text;
-using System.Threading.Channels;
 
 namespace Presentations.AuthorizationHandler.RequiredPermission
 {

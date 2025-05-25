@@ -10,6 +10,9 @@ namespace BusinessLogics.RepositoriesImpl
 {
     public class GroupChatRepository : GenericRepository<GroupChat>, IGroupChatRepository
     {
+        public GroupChatRepository(FakeDiscordContext context) : base(context)
+        {
+        }
         private List<GetGroupChatDTO> GetGroupChat(int userId)
         {
             var result = from u in _context.Users
@@ -19,7 +22,7 @@ namespace BusinessLogics.RepositoriesImpl
                          on ur.RoleId equals r.RoleId
                          join g in _context.GroupChats
                          on r.GroupChatId equals g.GroupChatId
-                         where u.IsActive && u.UserId == userId && r.RoleName == RolesSeed.MEMBER_ROLE
+                         where u.IsActive && u.UserId == userId && r.RoleName == RolesSeed.MEMBER_ROLE && g.IsActive
                          select new GetGroupChatDTO
                          {
                              GroupChatId = g.GroupChatId,
@@ -28,15 +31,12 @@ namespace BusinessLogics.RepositoriesImpl
                          };
             return result.ToList();
         }
-        public GroupChatRepository(FakeDiscordContext context) : base(context)
-        {
-        }
 
         public async Task<GroupChat> GetGroupChatByChannelIdAsync(int channelId)
         {
             var channel = await _context.Channels.SingleOrDefaultAsync(x => x.ChannelId == channelId);
             var groupChat = await _context.GroupChats.FindAsync(channel.GroupChatId);
-            return groupChat;
+            return groupChat.IsActive ? groupChat : null;
         }
 
         public async Task<GetGroupChatDTO> GetGroupChatByIdAsync(int groupChatId)
@@ -48,7 +48,7 @@ namespace BusinessLogics.RepositoriesImpl
                 Name = groupChat.Name,
                 CoverImage = groupChat.CoverImage
             };
-            return result;
+            return groupChat.IsActive ? result : null;
         }
 
         public async Task<IEnumerable<GetGroupChatDTO>> GetJoinedGroupChatPaginationAsync(int userId, int? page, int items)
@@ -66,34 +66,29 @@ namespace BusinessLogics.RepositoriesImpl
         public async Task<GroupChat> GetGroupChatByInviteCode(string inviteCode)
         {
             var result = await _context.GroupChats.FirstOrDefaultAsync(x => x.InviteCode == inviteCode);
-            return result;
+            return result.IsActive ? result : null;
         }
 
         public GroupChats GetGroupChatsPagination(int page, int itemsPerPage, string? keyword)
         {
-            var query = table.AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(keyword))
-            {
-                query = query.Where(groupChat => groupChat.Name.Contains(keyword));
-            }
-
+            var query = from groupChat in table
+                        join user in _context.Users on groupChat.UserCreated equals user.UserId
+                        where string.IsNullOrWhiteSpace(keyword) || groupChat.Name.Contains(keyword)
+                        orderby groupChat.GroupChatId
+                        select new GroupChatPaginationDTO
+                        {
+                            GroupChatId = groupChat.GroupChatId,
+                            Name = groupChat.Name,
+                            CoverImage = groupChat.CoverImage,
+                            DateCreated = groupChat.DateCreated,
+                            UserCreated = user.UserName ?? "N/A",
+                            IsActive = groupChat.IsActive
+                        };
             var totalItems = query.Count();
             var groupChats = query
-                .OrderBy(g => g.GroupChatId)
                 .Skip((page - 1) * itemsPerPage)
                 .Take(itemsPerPage)
-                .Select(groupChat => new GroupChatPaginationDTO
-                {
-                    GroupChatId = groupChat.GroupChatId,
-                    Name = groupChat.Name,
-                    CoverImage = groupChat.CoverImage,
-                    DateCreated = groupChat.DateCreated,
-                    UserCreated = _context.Users.Find(groupChat.UserCreated).UserName ?? "N/A", // Fix for CS8602
-                    IsActive = groupChat.IsActive
-                })
                 .ToList();
-
             return new GroupChats
             {
                 Data = groupChats,

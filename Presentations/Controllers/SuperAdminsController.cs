@@ -23,6 +23,7 @@ namespace Presentations.Controllers
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
+        #region Admin
         [HttpPut]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginAdminDTO model)
@@ -34,6 +35,21 @@ namespace Presentations.Controllers
             var token = await _unitOfWork.SuperAdmins.Login(model);
             return Ok(token);
         }
+        [HttpPost]
+        public IActionResult IsAdmin([FromBody] LoginAdminDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var admin = _unitOfWork.SuperAdmins.GetAll().FirstOrDefault(x => x.Username == model.UserName && x.Password == model.Password);
+            if(admin == null)
+            {
+                return BadRequest("Wrong password, please try again!!!");
+            }
+            return Ok(true);
+        }
+        #endregion
         #region UsersManagement
         [HttpGet("{page}/{itemsPerPage}")]
         public async Task<IActionResult> GetUsers(int page, int itemsPerPage, string? keyword)
@@ -51,6 +67,7 @@ namespace Presentations.Controllers
                 return NotFound();
             }
             _unitOfWork.BeginTransaction();
+            
             user.IsActive = false;
             _unitOfWork.Users.Update(user);
             _unitOfWork.Save();
@@ -88,7 +105,7 @@ namespace Presentations.Controllers
             };
             return Ok(responseModel);
         }
-        [HttpPut]
+        [HttpPut("{userId}")]
         public async Task<IActionResult> UnSuspendUser(int userId)
         {
             var user = _unitOfWork.Users.GetById(userId);
@@ -172,7 +189,7 @@ namespace Presentations.Controllers
             };
             return Ok(responseModel);
         }
-        [HttpPut]
+        [HttpPut("{groupChatId}")]
         public async Task<IActionResult> UnSuspendGroupChat(int groupChatId)
         {
             var groupChat = _unitOfWork.GroupChats.GetById(groupChatId);

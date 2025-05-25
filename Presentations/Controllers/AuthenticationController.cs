@@ -33,7 +33,6 @@ namespace Presentations.Controllers
             var result = await _unitOfWork.Authentication.Login(model);
             if (result == null) // Check if login failed (null result or another failure indicator)
             {
-                _unitOfWork.Rollback();
                 return Unauthorized("Invalid credentials."); // Return 401 if login fails
             }
             return Ok(result);

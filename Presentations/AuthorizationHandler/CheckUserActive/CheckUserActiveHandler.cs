@@ -29,7 +29,7 @@ namespace Presentations.AuthorizationHandler.CheckUserActive
             }
             var user = _unitOfWork.Users.GetById(userId);
             var isInSuspend = _unitOfWork.SuspendUsers.GetAll().FirstOrDefault(x => x.UserId == userId) != null;
-            if (!user.IsActive && !isInSuspend) return;
+            if (user.IsActive == false && isInSuspend == true) return;
             context.Succeed(requirement);
         }
     }
