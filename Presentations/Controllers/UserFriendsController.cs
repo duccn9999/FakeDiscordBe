@@ -35,7 +35,7 @@ namespace Presentations.Controllers
         [HttpGet("{userId}")]
         public async Task<IActionResult> GetBlockedUser(int userId)
         {
-            return Ok(_unitOfWork.UserFriends.GetBlockedUsers(userId));
+            return Ok(0);
         }
 
         // POST api/<UserFriendsController>
@@ -50,10 +50,10 @@ namespace Presentations.Controllers
             var receiver = _unitOfWork.Users.GetByUsername(model.Receiver);
             var sender = _unitOfWork.Users.GetById(model.UserId1);
             var existUserFriend = _unitOfWork.UserFriends.GetAll().SingleOrDefault(x => x.UserId1 == Math.Min(receiver.UserId, model.UserId1) && x.UserId2 == Math.Max(receiver.UserId, model.UserId1));
-            if (existUserFriend != null && existUserFriend.Status == (int)FriendStatus.Accepted)
+            if (existUserFriend != null && existUserFriend.Status)
             {
                 return Conflict($"You and {receiver.UserName} has already been friend!");
-            }else if (existUserFriend != null && existUserFriend.Status == (int)FriendStatus.Blocked)
+            }else if (existUserFriend != null)
             {
 
             }
@@ -87,7 +87,7 @@ namespace Presentations.Controllers
                 Message = notification.Message,
                 IsRead = notification.IsRead,
                 Type = notification.Type,
-                DateCreated = notification.DateCreated
+                DateCreated = notification.DateCreated.ToString("yyyy-MM-dd HH:mm")
             });
         }
 
@@ -124,7 +124,7 @@ namespace Presentations.Controllers
                 Message = notification.Message,
                 IsRead = notification.IsRead,
                 Type = notification.Type,
-                DateCreated = notification.DateCreated
+                DateCreated = notification.DateCreated.ToString("yyyy-MM-dd HH:mm")
             });
         }
 
@@ -159,7 +159,7 @@ namespace Presentations.Controllers
                 Message = notification.Message,
                 IsRead = notification.IsRead,
                 Type = notification.Type,
-                DateCreated = notification.DateCreated
+                DateCreated = notification.DateCreated.ToString("yyyy-MM-dd HH:mm")
             });
         }
 
@@ -184,7 +184,7 @@ namespace Presentations.Controllers
                 UserId2 = userFriend.UserId2,
             };
             _unitOfWork.BeginTransaction();
-            userFriend.Status = (int)FriendStatus.Blocked;
+            userFriend.Status = false;
             _unitOfWork.UserFriends.Update(userFriend);
             _unitOfWork.Save();
             _unitOfWork.Commit();
@@ -237,7 +237,7 @@ namespace Presentations.Controllers
                 UserId2 = userFriend.UserId2,
             };
             _unitOfWork.BeginTransaction();
-            userFriend.Status = (int)FriendStatus.Accepted;
+            userFriend.Status = true;
             _unitOfWork.UserFriends.Update(userFriend);
             _unitOfWork.Save();
             _unitOfWork.Commit();

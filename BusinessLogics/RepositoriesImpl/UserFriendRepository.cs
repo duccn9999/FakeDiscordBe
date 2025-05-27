@@ -10,7 +10,7 @@ namespace BusinessLogics.RepositoriesImpl
         {
         }
 
-        private IEnumerable<GetUserFriendDTO> GetUserFriendsByStatus(int userId, int status)
+        private IEnumerable<GetUserFriendDTO> GetUserFriendsByStatus(int userId, bool status)
         {
             var friendList = _context.UserFriends.Where(x => x.UserId1 == userId || x.UserId2 == userId).ToList();
             var result = from friend in friendList
@@ -29,14 +29,9 @@ namespace BusinessLogics.RepositoriesImpl
             return result.AsEnumerable();
         }
 
-        public IEnumerable<GetUserFriendDTO> GetBlockedUsers(int userId)
-        {
-            return GetUserFriendsByStatus(userId, 2);
-        }
-
         public IEnumerable<GetUserFriendDTO> GetFriendsByUser(int userId)
         {
-            return GetUserFriendsByStatus(userId, 1);
+            return GetUserFriendsByStatus(userId, true);
         }
     }
 }

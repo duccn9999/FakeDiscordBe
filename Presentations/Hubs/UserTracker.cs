@@ -9,7 +9,7 @@ namespace Presentations.Hubs
         public Dictionary<string, List<string>> connectedUsers { get; set; } = new();
         public Dictionary<int, List<string>> usersByChannel { get; set; } = new();
         public Dictionary<int, List<int>> onlineFriends { get; set; } = new();
-        public async Task GetConnectedUsers(string groupChatId, string username)
+        public async Task GetConnectedUsers(string groupChatId, string userId)
         {
             lock (connectedUsers)
             {
@@ -18,15 +18,15 @@ namespace Presentations.Hubs
                     connectedUsers[groupChatId] = new List<string>();
                 }
 
-                if (!connectedUsers[groupChatId].Contains(username))
+                if (!connectedUsers[groupChatId].Contains(userId))
                 {
-                    connectedUsers[groupChatId].Add(username);
+                    connectedUsers[groupChatId].Add(userId);
                 }
             }
             await Task.CompletedTask;
         }
 
-        public async Task GetUsersByChannel(int channelId, string username)
+        public async Task GetUsersByChannel(int channelId, string userId)
         {
             lock (usersByChannel)
             {
@@ -34,15 +34,15 @@ namespace Presentations.Hubs
                 {
                     usersByChannel[channelId] = new List<string>();
                 }
-                if (!usersByChannel[channelId].Contains(username))
+                if (!usersByChannel[channelId].Contains(userId))
                 {
-                    usersByChannel[channelId].Add(username);
+                    usersByChannel[channelId].Add(userId);
                 }
             }
             await Task.CompletedTask;
         }
 
-        public async Task TrackUsersLeave(int channelId, string username)
+        public async Task TrackUsersLeave(int channelId, string userId)
         {
             lock (usersByChannel)
             {
@@ -50,9 +50,9 @@ namespace Presentations.Hubs
                 {
                     return;
                 }
-                if (usersByChannel[channelId].Contains(username))
+                if (usersByChannel[channelId].Contains(userId))
                 {
-                    usersByChannel[channelId].Remove(username);
+                    usersByChannel[channelId].Remove(userId);
                 }
             }
             await Task.CompletedTask;
@@ -85,14 +85,14 @@ namespace Presentations.Hubs
             }
             await Task.CompletedTask;
         }
-        public async Task<GetLastSeenMessageDTO> TrackLastMessage(string username, IUnitOfWork unitOfWork)
+        public async Task<GetLastSeenMessageDTO> TrackLastMessage(string userId, IUnitOfWork unitOfWork)
         {
             var lastChannel = usersByChannel
-                .Where(x => x.Value.Contains(username))
+                .Where(x => x.Value.Contains(userId))
                 .Select(x => x.Key)
                 .FirstOrDefault();
             var currentUserId = unitOfWork.Users.GetAll()
-            .Where(x => x.UserName == username)
+            .Where(x => x.UserName == userId)
             .Select(x => x.UserId)
             .FirstOrDefault();
             // get the newest message
@@ -124,10 +124,10 @@ namespace Presentations.Hubs
             }
             return lastSeenMessage;
         }
-        public async Task<GetLastSeenMessageDTO> TrackLastMessage(string username, IUnitOfWork unitOfWork, int channelId)
+        public async Task<GetLastSeenMessageDTO> TrackLastMessage(string userId, IUnitOfWork unitOfWork, int channelId)
         {
             var currentUserId = unitOfWork.Users.GetAll()
-            .Where(x => x.UserName == username)
+            .Where(x => x.UserName == userId)
             .Select(x => x.UserId)
             .FirstOrDefault();
             // get the newest message

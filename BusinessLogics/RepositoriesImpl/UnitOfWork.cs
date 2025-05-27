@@ -37,6 +37,7 @@ namespace BusinessLogics.RepositoriesImpl
         public ISuperAdminRepository _superAdminRepository;
         public ISuspendUserRepository _suspendUserRepository;
         public ISuspendGroupChatRepository _suspendGroupChatRepository;
+        public ISystemNotificationRepository _systemNotificationRepository;
         public UnitOfWork(FakeDiscordContext context, IConfiguration config)
         {
             _context = context;
@@ -70,6 +71,7 @@ namespace BusinessLogics.RepositoriesImpl
         public ISuperAdminRepository SuperAdmins => _superAdminRepository ??= new SuperAdminRepository(_config, _context);
         public ISuspendUserRepository SuspendUsers => _suspendUserRepository ??= new SuspendUserRepository(_context);
         public ISuspendGroupChatRepository SuspendGroupChats => _suspendGroupChatRepository ??= new SuspendGroupChatRepository(_context);
+        public ISystemNotificationRepository SystemNotifications => _systemNotificationRepository ??= new SystemNotificationRepository(_context);
         public void BeginTransaction()
         {
             _transaction = _context.Database.BeginTransaction();

@@ -5,6 +5,7 @@ using DataAccesses.DTOs.PaginationModels;
 using DataAccesses.DTOs.SuperAdmins;
 using DataAccesses.DTOs.SuspendGroupChats;
 using DataAccesses.DTOs.SuspendUsers;
+using DataAccesses.DTOs.SystemNotifications;
 using DataAccesses.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +25,7 @@ namespace Presentations.Controllers
             _mapper = mapper;
         }
         #region Admin
-        [HttpPut]
+        [HttpPost]
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginAdminDTO model)
         {
@@ -48,6 +49,46 @@ namespace Presentations.Controllers
                 return BadRequest("Wrong password, please try again!!!");
             }
             return Ok(true);
+        }
+        [HttpPost]
+        public async Task<IActionResult> SendNotification([FromBody] CreateSystemNotificationDTO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            _unitOfWork.BeginTransaction();
+            var userIds = _unitOfWork.Users.GetAll().Select(u => u.UserId).ToList();
+            var notificationsDto = userIds.Select(userId => new CreateSystemNotificationModel
+            {
+                Content = model.Content,
+                UserId = userId,
+            }).ToList();
+            var systemNotification = _mapper.Map<List<SystemNotification>>(notificationsDto);
+            _unitOfWork.SystemNotifications.InsertRange(systemNotification);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(model.Content);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetOverView()
+        {
+            var totalUsers = await _unitOfWork.Users.GetTotalUsers();
+            var usersCreatedToday = await _unitOfWork.Users.GetUsersCreatedToday();
+            var totalGroupChats = await _unitOfWork.GroupChats.GetTotalGroupChats();
+            var groupChatsCreatedToday = await _unitOfWork.GroupChats.GetGroupChatsCreatedToday();
+
+            //await Task.WhenAll(totalUsersTask, usersCreatedTodayTask, totalGroupChatsTask, groupChatsCreatedTodayTask);
+
+            var result = new
+            {
+                TotalUsers = totalUsers,
+                UsersCreatedToday = usersCreatedToday,
+                TotalGroupChats = totalGroupChats,
+                GroupChatsCreatedToday = groupChatsCreatedToday
+            };
+
+            return Ok(result);
         }
         #endregion
         #region UsersManagement

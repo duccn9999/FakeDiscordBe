@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using System.Text.Json.Serialization;
 
 namespace DataAccesses.DTOs.UserFriends
 {
@@ -12,6 +7,6 @@ namespace DataAccesses.DTOs.UserFriends
         public int UserId1 { get; set; }
         public int UserId2 { get; set; }
         [JsonIgnore]
-        public int Status { get; set; } = 1;
+        public bool Status { get; set; } = true;
     }
 }

@@ -261,7 +261,7 @@ namespace Presentations.Controllers
                 Avatar = user.Avatar,
                 UserName = user.UserName
             };
-            if(!members.Select(member => member.UserId).Contains(userId))
+            if (!members.Select(member => member.UserId).Contains(userId))
             {
                 return NotFound();
             }
@@ -324,7 +324,7 @@ namespace Presentations.Controllers
                 UserName = user.UserName,
                 Avatar = user.UserName
             };
-            if(blockUser == null)
+            if (blockUser == null)
             {
                 return NotFound();
             }
@@ -335,5 +335,36 @@ namespace Presentations.Controllers
             return Ok(responseModel);
         }
 
+        [HttpDelete("[action]/{userId}/{groupChatId}")]
+        public async Task<IActionResult> LeaveGroupChat(int userId, int groupChatId)
+        {
+            var groupChat = _unitOfWork.GroupChats.GetById(groupChatId);
+            var ownner = _unitOfWork.Users.GetById(groupChat.UserCreated);
+            var responseModel = new GetGroupChatDTO
+            {
+                GroupChatId = groupChat.GroupChatId,
+                CoverImage = groupChat.CoverImage,
+                Name = groupChat.Name
+            };
+            if (groupChat.UserCreated == userId)
+            {
+                return BadRequest("You cannot leave this group chat because you are the owner of this group chat. Please delete this group chat if you want to leave it.");
+            }
+            var members = _unitOfWork.Users.GetUsersInGroupChat(groupChatId);
+            if (!members.Select(member => member.UserId).Contains(userId))
+            {
+                return NotFound();
+            }
+            _unitOfWork.BeginTransaction();
+            var roles = await _unitOfWork.UserRoles.GetRolesByUserInGroupChat(groupChatId, userId);
+            var roleIds = roles.Select(r => r.RoleId).ToList();
+            var userRoles = _unitOfWork.UserRoles.GetAll()
+                .Where(ur => ur.UserId == userId && roleIds.Contains(ur.RoleId))
+                .ToList();
+            _unitOfWork.UserRoles.DeleteRange(userRoles);
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(responseModel);
+        }
     }
 }

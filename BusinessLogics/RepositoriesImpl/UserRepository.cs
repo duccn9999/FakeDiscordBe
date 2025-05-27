@@ -174,16 +174,19 @@ namespace BusinessLogics.RepositoriesImpl
 
             return usersWithRoles;
         }
+        #region AdminPart
 
+        
         public async Task<int> GetTotalUsers()
         {
             return await _context.Users.CountAsync();
         }
 
-        public async Task<int> GetUserCreatedToday()
+        public async Task<int> GetUsersCreatedToday()
         {
             var today = DateTime.UtcNow.Date;
             return await _context.Users.CountAsync(u => u.DateCreated.Date == today);
         }
+        #endregion
     }
 }

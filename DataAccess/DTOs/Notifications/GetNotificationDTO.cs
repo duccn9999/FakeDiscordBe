@@ -18,6 +18,6 @@ namespace DataAccesses.DTOs.Notifications
         public bool IsRead { get; set; }
         /* true: friend request, false: mention */
         public bool Type { get; set; }
-        public DateTime DateCreated { get; set; }
+        public string DateCreated { get; set; }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Notifications;
 using DataAccesses.DTOs.PrivateMessages;
+using DataAccesses.DTOs.SystemNotifications;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 
@@ -16,14 +17,14 @@ namespace Presentations.Hubs
             _unitOfWork = unitOfWork;
             _userTracker = userTracker;
         }
-        public async Task OnConnected(string username)
+        public async Task OnConnected(string userId)
         {
-            await Clients.Caller.SendAsync("UserConnected", username);
+            await Clients.Caller.SendAsync("UserConnected", userId);
         }
 
-        public async Task OnDisconnected(string username)
+        public async Task OnDisconnected(string userId)
         {
-            var lastSeenMessage = _userTracker.TrackLastMessage(username, _unitOfWork).Result;
+            var lastSeenMessage = _userTracker.TrackLastMessage(userId, _unitOfWork).Result;
             await Clients.Caller.SendAsync("UserDisconnected", lastSeenMessage);
         }
 
@@ -35,19 +36,19 @@ namespace Presentations.Hubs
         public async Task SendFriendRequest(CreateNotificationDTO model)
         {
             var receiver = _unitOfWork.Users.GetById(model.UserId2);
-            await Clients.User(receiver.UserName).SendAsync("SendFriendRequest", model);
+            await Clients.User(receiver.UserId.ToString()).SendAsync("SendFriendRequest", model);
         }
 
         public async Task AcceptFriendRequest(GetNotificationDTO model)
         {
             var receiver = _unitOfWork.Users.GetById(model.UserId2);
-            await Clients.User(receiver.UserName).SendAsync("AcceptFriendRequest", model);
+            await Clients.User(receiver.UserId.ToString()).SendAsync("AcceptFriendRequest", model);
         }
 
         public async Task CancelFriendRequest(GetNotificationDTO model)
         {
             var receiver = _unitOfWork.Users.GetById(model.UserId2);
-            await Clients.User(receiver.UserName).SendAsync("CancelFriendRequest", model);
+            await Clients.User(receiver.UserId.ToString()).SendAsync("CancelFriendRequest", model);
         }
 
         public async Task SendPrivateMessage(GetPrivateMessageDTO model, int sender, int receiver)
@@ -72,6 +73,23 @@ namespace Presentations.Hubs
         {
             var users = _unitOfWork.Users.GetAll().Where(x => x.UserId == sender || x.UserId == receiver).Select(x => x.UserName).ToList();
             await Clients.Users(users).SendAsync("DeletePrivateMessageAttachment", model);
+        }
+
+        public async Task GetSystemNotifications(int userId)
+        {
+            var user = _unitOfWork.Users.GetById(userId);
+            var notifications = _unitOfWork.SystemNotifications.GetAll()
+                .Where(x => x.UserId == userId && !x.IsRead)
+                .Select(x => new GetSystemNotificationDTO
+                {
+                    SystemNotificationId = x.SystemNotificationId,
+                    Content = x.Content,
+                    DateCreated = x.DateCreated.ToString("yyyy-MM-dd HH:mm"),
+                    IsRead = x.IsRead,
+                    UserId = x.UserId,
+                })
+                .ToList();
+            await Clients.User(user.UserId.ToString()).SendAsync("GetSystemNotifications", notifications);
         }
     }
 }

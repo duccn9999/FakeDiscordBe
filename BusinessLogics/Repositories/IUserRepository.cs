@@ -20,6 +20,6 @@ namespace BusinessLogics.Repositories
         /* ADMIN DASHBOARD*/
         public Task<Users> GetUsersPagination(int page, int itemsPerPage, string? keyword);
         public Task<int> GetTotalUsers();
-        public Task<int> GetUserCreatedToday();
+        public Task<int> GetUsersCreatedToday();
     }
 }

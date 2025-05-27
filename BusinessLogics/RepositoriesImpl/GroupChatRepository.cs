@@ -95,5 +95,16 @@ namespace BusinessLogics.RepositoriesImpl
                 Pages = (int)Math.Ceiling((double)totalItems / itemsPerPage),
             };
         }
+
+        public async Task<int> GetTotalGroupChats()
+        {
+            return await table.CountAsync();
+        }
+
+        public async Task<int> GetGroupChatsCreatedToday()
+        {
+            var today = DateTime.UtcNow.Date;
+            return await _context.GroupChats.CountAsync(g => g.DateCreated.Date == today);
+        }
     }
 }

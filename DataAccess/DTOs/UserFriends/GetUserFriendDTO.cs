@@ -15,7 +15,7 @@ namespace DataAccesses.DTOs.UserFriends
         public int UserId2 { get; set; }
         public string Avatar { get; set; }
         public string UserName { get; set; }
-        public int Status { get; set; }
+        public bool Status { get; set; }
         public DateTime RequestDate { get; set; }
     }
 }

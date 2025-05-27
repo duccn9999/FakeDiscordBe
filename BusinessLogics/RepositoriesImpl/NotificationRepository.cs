@@ -24,7 +24,7 @@ namespace BusinessLogics.RepositoriesImpl
                     Message = n.Message,
                     IsRead = n.IsRead,
                     Type = n.Type,
-                    DateCreated = n.DateCreated,
+                    DateCreated = n.DateCreated.ToString("yyyy-MM-dd HH:mm"),
                 }).Take(15)
                 .ToListAsync();
             if(notifications == null || notifications.Count == 0)

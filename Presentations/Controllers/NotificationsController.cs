@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Notifications;
+using DataAccesses.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -27,20 +28,6 @@ namespace Presentations.Controllers
             var notifications = await _unitOfWork.Notifications.GetNotificationsByReceiverId(receiverId);
             return Ok(notifications);
         }
-
-        // GET api/<NotificationController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/<NotificationController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-        }
-
         // PUT api/<NotificationController>/5
         [HttpPut]
         public async Task<IActionResult> AcceptFriendRequestResponse([FromBody] UpdateNotificationDTO model)
@@ -67,7 +54,7 @@ namespace Presentations.Controllers
                 Message = notification.Message,
                 IsRead = notification.IsRead,
                 Type = notification.Type,
-                DateCreated = notification.DateCreated
+                DateCreated = notification.DateCreated.ToString("yyyy-MM-dd HH:mm")
             });
         }
 
@@ -92,14 +79,35 @@ namespace Presentations.Controllers
                 Message = notification.Message,
                 IsRead = notification.IsRead,
                 Type = notification.Type,
-                DateCreated = notification.DateCreated
+                DateCreated = notification.DateCreated.ToString("yyyy-MM-dd HH:mm")
             });
         }
-
-        // DELETE api/<NotificationController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpPut("{receiverId}")]
+        public async Task<IActionResult> MarkAllNotificationsAsRead(int receiverId)
         {
+            var notifications = _unitOfWork.Notifications.GetAll().Where(x => x.UserId2 == receiverId && !x.IsRead).ToList();
+            if (notifications == null || !notifications.Any())
+            {
+                return NotFound();
+            }
+            _unitOfWork.BeginTransaction();
+            foreach (var notification in notifications)
+            {
+                notification.IsRead = true;
+                _unitOfWork.Notifications.Update(notification);
+            }
+            _unitOfWork.Save();
+            _unitOfWork.Commit();
+            return Ok(notifications.Select(n => new GetNotificationDTO
+            {
+                NotificationId = n.NotificationId,
+                UserId1 = n.UserId1,
+                UserId2 = n.UserId2,
+                Message = n.Message,
+                IsRead = n.IsRead,
+                Type = n.Type,
+                DateCreated = n.DateCreated.ToString("yyyy-MM-dd HH:mm")
+            }));
         }
     }
 }

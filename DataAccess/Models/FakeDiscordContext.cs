@@ -31,6 +31,7 @@ namespace DataAccesses.Models
         public DbSet<SuspendUser> SuspendUsers { get; set; }
         public DbSet<SuspendGroupChat> SuspendGroupChats { get; set; }
         public DbSet<SystemNotification> SystemNotifications { get; set; }
+        public DbSet<BlockedUser> BlockedUsers { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<UserRole>()

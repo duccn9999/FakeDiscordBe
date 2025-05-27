@@ -217,15 +217,6 @@ namespace Presentations.Controllers
             });
             return Ok(newJwtToken);
         }
-
-        // DELETE api/<UsersController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-
-        }
-
-
         [HttpGet("ConfirmNewEmail/{userId}/{token}")]
         public async Task<IActionResult> ConfirmNewEmail(int userId, string token)
         {
@@ -329,6 +320,5 @@ namespace Presentations.Controllers
             await _unitOfWork.Emails.SendEmail(sendEmailDto);
             return Ok("Verification token sent to your email.");
         }
-
     }
 }

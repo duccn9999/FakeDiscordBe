@@ -17,14 +17,14 @@ namespace Presentations.Hubs
             _unitOfWork = unitOfWork;
             _userTracker = userTracker;
         }
-        public async Task OnEnterGroupChat(string username, GetGroupChatDTO groupChat)
+        public async Task OnEnterGroupChat(string userId, GetGroupChatDTO groupChat)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, groupChat.GroupChatId.ToString());
-            await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("EnterGroupChat", username, groupChat);
+            await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("EnterGroupChat", userId, groupChat);
         }
-        public async Task OnConnected(string username)
+        public async Task OnConnected(string userId)
         {
-            await Clients.User(username).SendAsync("OnConnected", username);
+            await Clients.User(userId).SendAsync("OnConnected", userId);
         }
         public async Task OnRefreshGroupChats()
         {
@@ -32,9 +32,9 @@ namespace Presentations.Hubs
             await Clients.User(userId).SendAsync("GroupChatsRefresh");
         }
 
-        public async Task<GetLastSeenMessageDTO> OnLeaveGroupChat(string username, GetGroupChatDTO groupChat)
+        public async Task<GetLastSeenMessageDTO> OnLeaveGroupChat(string userId, GetGroupChatDTO groupChat)
         {
-            var lastSeenMessage = await _userTracker.TrackLastMessage(username, _unitOfWork);
+            var lastSeenMessage = await _userTracker.TrackLastMessage(userId, _unitOfWork);
             // Notify other users in the group
             await Clients.Group(groupChat.GroupChatId.ToString()).SendAsync("LeaveGroupChat", lastSeenMessage);
 
