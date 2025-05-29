@@ -1,7 +1,6 @@
 ﻿using BusinessLogics.Repositories;
 using DataAccesses.DTOs.GroupChats;
-using DataAccesses.DTOs.PaginationModels;
-using DataAccesses.DTOs.UserGroupChats;
+using DataAccesses.DTOs.PaginationModels.GroupChats;
 using DataAccesses.Models;
 using DataAccesses.Utils;
 using Microsoft.EntityFrameworkCore;

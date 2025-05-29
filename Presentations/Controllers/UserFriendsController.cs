@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BusinessLogics.Repositories;
+using DataAccesses.DTOs.BlockedUsers;
 using DataAccesses.DTOs.Notifications;
 using DataAccesses.DTOs.UserFriends;
 using DataAccesses.Models;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NuGet.Protocol.Plugins;
 using System.Net.WebSockets;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -32,10 +34,16 @@ namespace Presentations.Controllers
             return Ok(_unitOfWork.UserFriends.GetFriendsByUser(userId));
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetBlockedUser(int userId)
+        [HttpGet("{userId}/{page}/{itemsPerPage}")]
+        public async Task<IActionResult> GetFriendsByUserFilter(int userId, int page, int itemsPerPage, string? keyword)
         {
-            return Ok(0);
+            return Ok(_unitOfWork.UserFriends.GetFriendsByUserPagination(userId, page, itemsPerPage, keyword));
+        }
+
+        [HttpGet("{userId}/{page}/{itemsPerPage}")]
+        public async Task<IActionResult> GetBlockedUser(int userId, int page, int itemsPerPage, string? keyword)
+        {
+            return Ok(_unitOfWork.BlockedUsers.GetBlockedUsersPagination(userId, page, itemsPerPage, keyword));
         }
 
         // POST api/<UserFriendsController>
@@ -184,8 +192,16 @@ namespace Presentations.Controllers
                 UserId2 = userFriend.UserId2,
             };
             _unitOfWork.BeginTransaction();
-            userFriend.Status = false;
-            _unitOfWork.UserFriends.Update(userFriend);
+            _unitOfWork.UserFriends.Delete(id);
+            _unitOfWork.Save();
+            var blockedUserModel = new CreateBlockedUserDTO
+            {
+                UserId1 = userFriend.UserId1,
+                UserId2 = userFriend.UserId2,
+                BlockedDate = DateTime.Now,
+            };
+            var blockedUser = _mapper.Map<BlockedUser>(blockedUserModel);
+            _unitOfWork.BlockedUsers.Insert(blockedUser);
             _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(responseModel);
@@ -220,25 +236,23 @@ namespace Presentations.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> UnblockUser(int id)
         {
-            var userFriend = _unitOfWork.UserFriends.GetById(id);
-            var user = _unitOfWork.Users.GetById(userFriend.UserId2);
-            if (userFriend == null)
+            var blockedUser = _unitOfWork.BlockedUsers.GetById(id);
+            var user = _unitOfWork.Users.GetById(blockedUser.UserId2);
+            if (blockedUser == null)
             {
                 return NotFound();
             }
-            var responseModel = new GetUserFriendDTO
+            var responseModel = new GetBlockedUserDTO
             {
-                Id = userFriend.Id,
+                Id = blockedUser.Id,
                 Avatar = user.Avatar,
-                UserName = user.UserName,
-                RequestDate = userFriend.RequestDate,
-                Status = userFriend.Status,
-                UserId1 = userFriend.UserId1,
-                UserId2 = userFriend.UserId2,
+                Username = user.UserName,
+                BlockedDate = blockedUser.BlockedDate.ToString("dd/MM/yyyy HH:mm"),
+                UserId1 = blockedUser.UserId1,
+                UserId2 = blockedUser.UserId2,
             };
             _unitOfWork.BeginTransaction();
-            userFriend.Status = true;
-            _unitOfWork.UserFriends.Update(userFriend);
+            _unitOfWork.BlockedUsers.Delete(blockedUser.Id);
             _unitOfWork.Save();
             _unitOfWork.Commit();
             return Ok(responseModel);

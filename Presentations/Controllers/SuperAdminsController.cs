@@ -2,6 +2,8 @@
 using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Emails;
 using DataAccesses.DTOs.PaginationModels;
+using DataAccesses.DTOs.PaginationModels.GroupChats;
+using DataAccesses.DTOs.PaginationModels.Users;
 using DataAccesses.DTOs.SuperAdmins;
 using DataAccesses.DTOs.SuspendGroupChats;
 using DataAccesses.DTOs.SuspendUsers;

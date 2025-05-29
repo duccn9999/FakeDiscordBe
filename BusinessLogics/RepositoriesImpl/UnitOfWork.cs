@@ -38,6 +38,7 @@ namespace BusinessLogics.RepositoriesImpl
         public ISuspendUserRepository _suspendUserRepository;
         public ISuspendGroupChatRepository _suspendGroupChatRepository;
         public ISystemNotificationRepository _systemNotificationRepository;
+        public IBlockUserRepository _blockUserRepository;
         public UnitOfWork(FakeDiscordContext context, IConfiguration config)
         {
             _context = context;
@@ -72,6 +73,7 @@ namespace BusinessLogics.RepositoriesImpl
         public ISuspendUserRepository SuspendUsers => _suspendUserRepository ??= new SuspendUserRepository(_context);
         public ISuspendGroupChatRepository SuspendGroupChats => _suspendGroupChatRepository ??= new SuspendGroupChatRepository(_context);
         public ISystemNotificationRepository SystemNotifications => _systemNotificationRepository ??= new SystemNotificationRepository(_context);
+        public IBlockUserRepository BlockedUsers => _blockUserRepository ??= new BlockedUserRepository(_context);
         public void BeginTransaction()
         {
             _transaction = _context.Database.BeginTransaction();

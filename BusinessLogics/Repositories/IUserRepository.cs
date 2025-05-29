@@ -1,5 +1,5 @@
 ﻿using BusinessLogics.RepositoriesImpl;
-using DataAccesses.DTOs.PaginationModels;
+using DataAccesses.DTOs.PaginationModels.Users;
 using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
 
@@ -12,7 +12,7 @@ namespace BusinessLogics.Repositories
         public Task<bool> CheckAccoutExistedAsync(string userName, string password);
         public User GetByUsername(string userName);
         /* MEMBERS MANAGEMENT */
-        public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId, int caller);
+        public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId, int caller, string? keyword);
         public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId);
         public IEnumerable<GetUserWithRolesDTO> GetUsersInGroupChatWithRoles(int groupChatId);
         public IEnumerable<GetUserDTO> GetUsersByRole(int roleId);

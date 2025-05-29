@@ -1,4 +1,5 @@
 ﻿using BusinessLogics.Repositories;
+using DataAccesses.DTOs.PaginationModels.GroupChats;
 using DataAccesses.DTOs.UserRoles;
 using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
@@ -31,13 +32,14 @@ namespace BusinessLogics.RepositoriesImpl
             return query.ToList();
         }
 
-        public List<GetNumberOfUserByEachRoleDTO> GetNumberOfUserByEachRole(int groupChatId)
+        public NumberOfUserByEachRole GetNumberOfUserByEachRole(int groupChatId, int page, int itemsPerPage, string? keyword)
         {
             var query = _context.Roles
                 .Where(r => r.GroupChatId == groupChatId
                             && r.RoleName != RolesSeed.ADMINISTRATOR_ROLE
                             && r.RoleName != RolesSeed.MEMBER_ROLE)
                 .Where(r => _context.GroupChats.Any(g => g.GroupChatId == r.GroupChatId && g.IsActive))
+                .Where(r => string.IsNullOrEmpty(keyword) || r.RoleName.Contains(keyword))
                 .Select(r => new GetNumberOfUserByEachRoleDTO
                 {
                     RoleId = r.RoleId,
@@ -46,10 +48,25 @@ namespace BusinessLogics.RepositoriesImpl
                     Total = _context.UserRoles
                         .Where(ur => ur.RoleId == r.RoleId)
                         .Join(_context.Users, ur => ur.UserId, u => u.UserId, (ur, u) => u)
-                        .Count(u => u.IsActive)
+                        .Count(u => u.IsActive),
+                    Color = r.Color,
+                    DateCreated = r.DateCreated.ToString("dd/MM/yyyy HH:mm"),
+                    DateModified = r.DateModified.HasValue ? r.DateModified.Value.ToString("dd/MM/yyyy HH:mm") : null,
                 });
 
-            return query.ToList();
+            int totalCount = query.Count();
+            int pages = (int)Math.Ceiling((double)totalCount / itemsPerPage);
+
+            var pagedData = query
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .ToList();
+
+            return new NumberOfUserByEachRole
+            {
+                Data = pagedData,
+                Pages = pages
+            };
         }
 
         public async Task<GetNumberOfUserByEachRoleDTO> GetNumberOfUserByRole(int groupChatId, int roleId)

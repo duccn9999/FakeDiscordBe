@@ -33,6 +33,7 @@ namespace BusinessLogics.Repositories
         ISuspendUserRepository SuspendUsers { get; }
         ISuspendGroupChatRepository SuspendGroupChats { get; }
         ISystemNotificationRepository SystemNotifications { get; }
+        IBlockUserRepository BlockedUsers { get; }
         void BeginTransaction();
         void Commit();
         void Rollback();

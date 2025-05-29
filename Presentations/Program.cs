@@ -166,5 +166,6 @@ app.UseMiddleware<ExceptionsHandlingMiddleware>();
 app.MapHub<UserHub>("/userHub");
 app.MapHub<GroupChatHub>("/groupChatHub");
 app.MapHub<ChannelHub>("/channelHub");
+app.MapHub<AdminHub>("/adminHub");
 app.MapControllers();
 app.Run();

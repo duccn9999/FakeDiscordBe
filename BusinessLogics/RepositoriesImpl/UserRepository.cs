@@ -1,6 +1,6 @@
 ﻿using BusinessLogics.Repositories;
 using CloudinaryDotNet.Actions;
-using DataAccesses.DTOs.PaginationModels;
+using DataAccesses.DTOs.PaginationModels.Users;
 using DataAccesses.DTOs.Roles;
 using DataAccesses.DTOs.Users;
 using DataAccesses.Models;
@@ -100,17 +100,20 @@ namespace BusinessLogics.RepositoriesImpl
             return users.AsEnumerable();
         }
 
-        public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId, int caller)
+        public IEnumerable<GetUserDTO> GetUsersInGroupChat(int groupChatId, int caller, string? keyword)
         {
             var users = from u in _context.Users
-                        join
-                        ur in _context.UserRoles
+                        join ur in _context.UserRoles
                         on u.UserId equals ur.UserId
                         join r in _context.Roles
                         on ur.RoleId equals r.RoleId
                         join g in _context.GroupChats
                         on r.GroupChatId equals g.GroupChatId
-                        where g.GroupChatId == groupChatId && u.UserId != caller && u.IsActive && g.IsActive
+                        where g.GroupChatId == groupChatId
+                            && u.UserId != caller
+                            && u.IsActive
+                            && g.IsActive
+                            && (string.IsNullOrEmpty(keyword) || u.UserName.Contains(keyword))
                         select new GetUserDTO
                         {
                             UserId = u.UserId,

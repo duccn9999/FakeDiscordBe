@@ -43,10 +43,10 @@ namespace Presentations.Controllers
             return NoContent();
         }
 
-        [HttpGet("{groupChatId}")]
-        public async Task<IActionResult> GetNumberOfUserByEachRole(int groupChatId)
+        [HttpGet("{groupChatId}/{page}/{itemsPerPage}")]
+        public async Task<IActionResult> GetNumberOfUserByEachRole(int groupChatId, int page, int itemsPerPage, string? keyword)
         {
-            var result = _unitOfWork.UserRoles.GetNumberOfUserByEachRole(groupChatId);
+            var result = _unitOfWork.UserRoles.GetNumberOfUserByEachRole(groupChatId, page, itemsPerPage, keyword);
             return Ok(result);
         }
 

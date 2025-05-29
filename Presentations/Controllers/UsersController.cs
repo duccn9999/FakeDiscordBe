@@ -32,9 +32,9 @@ namespace Presentations.Controllers
         }
         // GET: api/<UsersController>
         [HttpGet("GetUsersInGroupChat/{groupChatId}/{caller}")]
-        public async Task<IActionResult> GetUsersInGroupChat(int groupChatId, int caller)
+        public async Task<IActionResult> GetUsersInGroupChat(int groupChatId, int caller, string? keyword)
         {
-            var result = _unitOfWork.Users.GetUsersInGroupChat(groupChatId, caller);
+            var result = _unitOfWork.Users.GetUsersInGroupChat(groupChatId, caller, keyword);
             return Ok(result);
         }
         [HttpGet("GetUsersInGroupChatWithRoles/{groupChatId}")]

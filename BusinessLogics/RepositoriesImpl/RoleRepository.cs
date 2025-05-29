@@ -1,11 +1,7 @@
 ﻿using BusinessLogics.Repositories;
+using DataAccesses.DTOs.PaginationModels.Roles;
 using DataAccesses.DTOs.Roles;
 using DataAccesses.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BusinessLogics.RepositoriesImpl
 {
@@ -13,22 +9,51 @@ namespace BusinessLogics.RepositoriesImpl
     {
         public RoleRepository(FakeDiscordContext context) : base(context)
         {
-            
+
         }
 
-        public IEnumerable<GetRoleDTO> GetRolesByGroupChatId(int groupChatId)
+        public IEnumerable<GetRoleDTO> GetRolesByGroupChatId(int groupChatId, string? keyword)
         {
-            var result = from r in _context.Roles
-                         join g in _context.GroupChats
-                         on r.GroupChatId equals g.GroupChatId
-                         where g.GroupChatId == groupChatId && g.IsActive
-                         select new GetRoleDTO
-                         {
-                             RoleId = r.RoleId,
-                             RoleName = r.RoleName,
-                             Color = r.Color,
-                         };
+            var result = table
+                .Where(x => x.GroupChatId == groupChatId
+                           && x.RoleName != "ADMINISTRATOR"
+                           && x.RoleName != "MEMBER"
+                           && (string.IsNullOrEmpty(keyword) || x.RoleName.ToLower().Contains(keyword.ToLower())))
+                .Select(x => new GetRoleDTO
+                {
+                    RoleId = x.RoleId,
+                    RoleName = x.RoleName,
+                    Color = x.Color
+                });
             return result.AsEnumerable();
+        }
+
+        public Roles GetRolesByGroupChatIdPagination(int groupChatId, int page, int itemsPerPage, string? keyword)
+        {
+            var query = table
+                .Where(x => x.GroupChatId == groupChatId
+                           && x.RoleName != "ADMINISTRATOR"
+                           && x.RoleName != "MEMBER"
+                           && (string.IsNullOrEmpty(keyword) || x.RoleName.ToLower().Contains(keyword.ToLower())));
+
+            var totalCount = query.Count();
+            var totalPages = (int)Math.Ceiling((double)totalCount / itemsPerPage);
+
+            var result = query
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .Select(x => new GetRoleDTO
+                {
+                    RoleId = x.RoleId,
+                    RoleName = x.RoleName,
+                    Color = x.Color
+                })
+                .ToList();
+            return new Roles
+            {
+                Pages = totalPages,
+                roleDTO = result // Assuming roleDTO should be a list
+            };
         }
     }
 }

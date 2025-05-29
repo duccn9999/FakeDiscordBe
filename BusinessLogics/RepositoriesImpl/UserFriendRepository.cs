@@ -1,4 +1,5 @@
 ﻿using BusinessLogics.Repositories;
+using DataAccesses.DTOs.PaginationModels.Users;
 using DataAccesses.DTOs.UserFriends;
 using DataAccesses.Models;
 
@@ -32,6 +33,35 @@ namespace BusinessLogics.RepositoriesImpl
         public IEnumerable<GetUserFriendDTO> GetFriendsByUser(int userId)
         {
             return GetUserFriendsByStatus(userId, true);
+        }
+
+        public UserFriends GetFriendsByUserPagination(int userId, int page, int itemsPerPage, string? keyword)
+        {
+            var query = GetUserFriendsByStatus(userId, true);
+
+            // Apply keyword filter before counting/paging for better performance
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                query = query?.Where(f => f.UserName.Contains(keyword, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Materialize the filtered query once
+            var filteredFriends = query?.ToList() ?? new List<GetUserFriendDTO>();
+
+            int totalCount = filteredFriends.Count;
+            int totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling((double)totalCount / itemsPerPage);
+            int skip = Math.Max(0, (page - 1) * itemsPerPage);
+
+            var paginatedData = filteredFriends
+                .Skip(skip)
+                .Take(itemsPerPage)
+                .ToList();
+
+            return new UserFriends
+            {
+                Data = paginatedData,
+                Pages = totalPages
+            };
         }
     }
 }

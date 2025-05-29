@@ -33,7 +33,8 @@ namespace BusinessLogics.RepositoriesImpl
                 {
                     ChannelId = c.ChannelId,
                     ChannelName = c.ChannelName,
-                    GroupChatId = c.GroupChatId
+                    GroupChatId = c.GroupChatId,
+                    IsPrivate = c.IsPrivate
                 }
             ).Union(
                 from c in _context.Channels
@@ -43,7 +44,8 @@ namespace BusinessLogics.RepositoriesImpl
                 {
                     ChannelId = c.ChannelId,
                     ChannelName = c.ChannelName,
-                    GroupChatId = c.GroupChatId
+                    GroupChatId = c.GroupChatId,
+                    IsPrivate = c.IsPrivate
                 }
             );
             return result.AsEnumerable();

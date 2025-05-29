@@ -2,6 +2,7 @@
 using BusinessLogics.Repositories;
 using DataAccesses.DTOs.Channels;
 using DataAccesses.DTOs.Roles;
+using DataAccesses.DTOs.UserRoles;
 using DataAccesses.Models;
 using DataAccesses.Utils;
 using Microsoft.AspNetCore.Authorization;
@@ -26,16 +27,17 @@ namespace Presentations.Controllers
         // GET: api/<RolesController>
         [HttpGet("GetRolesByGroupChat/{groupChatId}")]
         [Authorize(Policy = Permissions.CAN_MANAGE_CHANNELS)]
-        public async Task<IActionResult> Get(int groupChatId)
+        public async Task<IActionResult> Get(int groupChatId, string? keyword)
         {
-            var result = _unitOfWork.Roles.GetAll()
-            .Where(x => x.GroupChatId == groupChatId && x.RoleName != "ADMINISTRATOR" && x.RoleName != "MEMBER")
-            .Select(x => new GetRoleDTO
-            {
-                RoleId = x.RoleId,
-                RoleName = x.RoleName,
-                Color = x.Color
-            });
+            var result = _unitOfWork.Roles.GetRolesByGroupChatId(groupChatId, keyword);
+            return Ok(result);
+        }
+
+        [HttpGet("[action]/{groupChatId}/{page}/{itemsPerPage}")]
+        [Authorize(Policy = Permissions.CAN_MANAGE_CHANNELS)]
+        public async Task<IActionResult> GetRolesPagination(int groupChatId, int page, int itemsPerPage, string? keyword)
+        {
+            var result = _unitOfWork.Roles.GetRolesByGroupChatIdPagination(groupChatId,page,itemsPerPage, keyword);
             return Ok(result);
         }
 
@@ -58,7 +60,17 @@ namespace Presentations.Controllers
             _unitOfWork.Roles.Insert(role);
             _unitOfWork.Save();
             _unitOfWork.Commit();
-            return Created("POST", model);
+            var totalUsers = await _unitOfWork.UserRoles.GetNumberOfUserByRole(model.GroupChatId, role.RoleId);
+            var responseModel = new GetNumberOfUserByEachRoleDTO
+            {
+                RoleId = role.RoleId,
+                RoleName = role.RoleName,
+                Color = role.Color,
+                DateCreated = role.DateCreated.ToString("dd/MM/yyyy HH:mm"),
+                DateModified = role.DateModified.HasValue ? role.DateModified.Value.ToString("dd/MM/yyyy HH:mm") : null,
+                Total = totalUsers.Total
+            };
+            return Ok(responseModel);
         }
 
         // PUT api/<RolesController>/5
@@ -75,6 +87,16 @@ namespace Presentations.Controllers
             _unitOfWork.Roles.Update(role);
             _unitOfWork.Save();
             _unitOfWork.Commit();
+            var totalUsers = await _unitOfWork.UserRoles.GetNumberOfUserByRole(role.GroupChatId, role.RoleId);
+            var responseModel = new GetNumberOfUserByEachRoleDTO
+            {
+                RoleId = role.RoleId,
+                RoleName = role.RoleName,
+                Color = role.Color,
+                DateCreated = role.DateCreated.ToString("dd/MM/yyyy HH:mm"),
+                DateModified = role.DateModified.HasValue ? role.DateModified.Value.ToString("dd/MM/yyyy HH:mm") : null,
+                Total = totalUsers.Total
+            };
             return Ok(role);
         }
 
@@ -86,11 +108,26 @@ namespace Presentations.Controllers
             {
                 return BadRequest(ModelState); // Return bad request if the model is invalid
             }
+            var role = _unitOfWork.Roles.GetById(roleId);
+            if(role == null)
+            {
+                return NotFound();
+            }
+            var totalUsers = await _unitOfWork.UserRoles.GetNumberOfUserByRole(role.GroupChatId, role.RoleId);
+            var responseModel = new GetNumberOfUserByEachRoleDTO
+            {
+                RoleId = role.RoleId,
+                RoleName = role.RoleName,
+                Color = role.Color,
+                DateCreated = role.DateCreated.ToString("dd/MM/yyyy HH:mm"),
+                DateModified = role.DateModified.HasValue ? role.DateModified.Value.ToString("dd/MM/yyyy HH:mm") : null,
+                Total = totalUsers.Total
+            };
             _unitOfWork.BeginTransaction();
             _unitOfWork.Roles.Delete(roleId);
             _unitOfWork.Save();
             _unitOfWork.Commit();
-            return NoContent();
+            return Ok(responseModel);
         }
     }
 }

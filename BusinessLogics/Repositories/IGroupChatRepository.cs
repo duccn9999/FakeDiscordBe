@@ -1,5 +1,5 @@
 ﻿using DataAccesses.DTOs.GroupChats;
-using DataAccesses.DTOs.PaginationModels;
+using DataAccesses.DTOs.PaginationModels.GroupChats;
 using DataAccesses.DTOs.UserGroupChats;
 using DataAccesses.Models;
 

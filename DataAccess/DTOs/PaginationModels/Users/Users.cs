@@ -1,4 +1,4 @@
-﻿namespace DataAccesses.DTOs.PaginationModels
+﻿namespace DataAccesses.DTOs.PaginationModels.Users
 {
     public class UserPaginationDTO
     {

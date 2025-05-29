@@ -51,21 +51,88 @@ namespace Presentations.Hubs
         public async Task SendMessage(GetMessageDTO model)
         {
             var user = _unitOfWork.Users.GetByUsername(model.Username);
-            // get blocked users
-            var blockUsers = new List<string>();
-            // get users that block this user
 
-            await Clients.Users(_userTracker.usersByChannel[model.ChannelId].Intersect(blockUsers)).SendAsync("SendMessage", model);
+            // Get users blocked by the sender
+            var blockedByUser = _unitOfWork.BlockedUsers.GetAll()
+                .Where(x => x.UserId1 == user.UserId)
+                .Select(x => x.UserId2.ToString())
+                .ToList();
+
+            // Get users who blocked the sender
+            var usersThatBlockedSender = _unitOfWork.BlockedUsers.GetAll()
+                .Where(x => x.UserId2 == user.UserId)
+                .Select(x => x.UserId1.ToString())
+                .ToList();
+
+            // Combine both lists to get all users who should NOT receive the message
+            var allBlockedUsers = blockedByUser.Union(usersThatBlockedSender).ToList();
+
+            // Get all users in the channel
+            var usersInChannel = _userTracker.usersByChannel[model.ChannelId];
+
+            // Get users who should receive the message (exclude blocked users)
+            var usersToSendMessage = usersInChannel.Except(allBlockedUsers).ToList();
+
+            // Send message to the filtered users
+            await Clients.Users(usersToSendMessage).SendAsync("SendMessage", model);
         }
 
         public async Task UpdateMessage(GetMessageDTO model)
         {
-            await Clients.Users(_userTracker.usersByChannel[model.ChannelId]).SendAsync("UpdateMessage", model);
+            var user = _unitOfWork.Users.GetByUsername(model.Username);
+
+            // Get users blocked by the sender
+            var blockedByUser = _unitOfWork.BlockedUsers.GetAll()
+                .Where(x => x.UserId1 == user.UserId)
+                .Select(x => x.UserId2.ToString())
+                .ToList();
+
+            // Get users who blocked the sender
+            var usersThatBlockedSender = _unitOfWork.BlockedUsers.GetAll()
+                .Where(x => x.UserId2 == user.UserId)
+                .Select(x => x.UserId1.ToString())
+                .ToList();
+
+            // Combine both lists to get all users who should NOT receive the update
+            var allBlockedUsers = blockedByUser.Union(usersThatBlockedSender).ToList();
+
+            // Get all users in the channel
+            var usersInChannel = _userTracker.usersByChannel[model.ChannelId];
+
+            // Get users who should receive the update (exclude blocked users)
+            var usersToReceiveUpdate = usersInChannel.Except(allBlockedUsers).ToList();
+
+            // Send update to the filtered users
+            await Clients.Users(usersToReceiveUpdate).SendAsync("UpdateMessage", model);
         }
 
         public async Task DeleteMessage(GetMessageDTO model)
         {
-            await Clients.Users(_userTracker.usersByChannel[model.ChannelId]).SendAsync("DeleteMessage", model);
+            var user = _unitOfWork.Users.GetByUsername(model.Username);
+
+            // Get users blocked by the sender
+            var blockedByUser = _unitOfWork.BlockedUsers.GetAll()
+                .Where(x => x.UserId1 == user.UserId)
+                .Select(x => x.UserId2.ToString())
+                .ToList();
+
+            // Get users who blocked the sender
+            var usersThatBlockedSender = _unitOfWork.BlockedUsers.GetAll()
+                .Where(x => x.UserId2 == user.UserId)
+                .Select(x => x.UserId1.ToString())
+                .ToList();
+
+            // Combine both lists to get all users who should NOT receive the delete notification
+            var allBlockedUsers = blockedByUser.Union(usersThatBlockedSender).ToList();
+
+            // Get all users in the channel
+            var usersInChannel = _userTracker.usersByChannel[model.ChannelId];
+
+            // Get users who should receive the delete notification (exclude blocked users)
+            var usersToReceiveDelete = usersInChannel.Except(allBlockedUsers).ToList();
+
+            // Send delete notification to the filtered users
+            await Clients.Users(usersToReceiveDelete).SendAsync("DeleteMessage", model);
         }
 
         public async Task MarkMentionsAsRead(string userId, int channelId)
